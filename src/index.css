@@ -1,0 +1,16 @@
+/* @tailwind base;
+@tailwind components;
+@tailwind utilities; */
+@import "tailwindcss";
+
+html,
+body,
+#root {
+  background-color: #09090b !important; /* Codul HEX pentru bg-zinc-950 */
+  color: #f4f4f5; /* text-zinc-100 */
+  min-height: 100vh;
+  margin: 0;
+  padding: 0;
+}
+
+@source "./**/*.{js,jsx,ts,tsx}";
