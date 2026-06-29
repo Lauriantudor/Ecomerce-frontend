@@ -43,14 +43,19 @@ const AddressForm = ({
   return (
     <form
       onSubmit={handleSubmit}
-      className="bg-zinc-950 border border-zinc-900 rounded-xl p-4 space-y-3 mt-2 animate-fadeIn"
+      // MODIFICAT: bg-stone-50 pe light mode, text adaptiv, margini discrete
+      className="bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-900 rounded-xl p-4 space-y-3 mt-2捷 animate-fadeIn transition-colors duration-300"
     >
-      <h4 className="text-xs font-bold uppercase tracking-wide text-zinc-400">
-        {initialData?.id ? "Editează Adresa" : "Detalii Adresă Nouă"}
+      {/* MODIFICAT: text-stone-500 pe light mode */}
+      <h4 className="text-xs font-bold uppercase tracking-wide text-stone-500 dark:text-zinc-400">
+        {initialData?.id || initialData?._id
+          ? "Editează Adresa"
+          : "Detalii Adresă Nouă"}
       </h4>
 
       <div>
-        <label className="block text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
+        {/* MODIFICAT: text-stone-600 pentru etichete lizibile pe fundal deschis */}
+        <label className="block text-[10px] text-stone-600 dark:text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
           Nume Complet
         </label>
         <input
@@ -59,14 +64,16 @@ const AddressForm = ({
           required
           value={formData.fullname}
           onChange={handleChange}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-zinc-200"
+          // MODIFICAT: bg-white / border-stone-200 / text-stone-800 pe light mode, focus cu emerald stabil pe ambele
+          className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-500 text-stone-800 dark:text-zinc-200 shadow-sm dark:shadow-none"
           placeholder="Ex: Popescu Andrei"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
+          {/* MODIFICAT: etichetă adaptivă */}
+          <label className="block text-[10px] text-stone-600 dark:text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
             Telefon
           </label>
           <input
@@ -75,12 +82,13 @@ const AddressForm = ({
             required
             value={formData.phoneNumber}
             onChange={handleChange}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-zinc-200"
+            className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-500 text-stone-800 dark:text-zinc-200 shadow-sm dark:shadow-none"
             placeholder="07xxxxxxxx"
           />
         </div>
         <div>
-          <label className="block text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
+          {/* MODIFICAT: etichetă adaptivă */}
+          <label className="block text-[10px] text-stone-600 dark:text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
             Oraș
           </label>
           <input
@@ -89,14 +97,15 @@ const AddressForm = ({
             required
             value={formData.city}
             onChange={handleChange}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-zinc-200"
-            placeholder="Ex: 550123"
+            className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-500 text-stone-800 dark:text-zinc-200 shadow-sm dark:shadow-none"
+            placeholder="Ex: Timișoara"
           />
         </div>
       </div>
 
       <div>
-        <label className="block text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
+        {/* MODIFICAT: etichetă adaptivă */}
+        <label className="block text-[10px] text-stone-600 dark:text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
           Adresă (Stradă, Număr...)
         </label>
         <input
@@ -105,14 +114,15 @@ const AddressForm = ({
           required
           value={formData.streetAddress}
           onChange={handleChange}
-          className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-zinc-200"
+          className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-500 text-stone-800 dark:text-zinc-200 shadow-sm dark:shadow-none"
           placeholder="Ex: Bd. Mihai Viteazul Nr. 12"
         />
       </div>
 
       <div className="grid grid-cols-2 gap-2">
         <div>
-          <label className="block text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
+          {/* MODIFICAT: etichetă adaptivă */}
+          <label className="block text-[10px] text-stone-600 dark:text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
             Țară
           </label>
           <input
@@ -121,12 +131,13 @@ const AddressForm = ({
             required
             value={formData.country}
             onChange={handleChange}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-zinc-200"
+            className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-500 text-stone-800 dark:text-zinc-200 shadow-sm dark:shadow-none"
             placeholder="Ex: Romania"
           />
         </div>
         <div>
-          <label className="block text-[10px] text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
+          {/* MODIFICAT: etichetă adaptivă */}
+          <label className="block text-[10px] text-stone-600 dark:text-zinc-500 font-bold mb-0.5 uppercase tracking-wider">
             Județ
           </label>
           <input
@@ -135,23 +146,26 @@ const AddressForm = ({
             required
             value={formData.county}
             onChange={handleChange}
-            className="w-full bg-zinc-900 border border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-500 text-zinc-200"
+            className="w-full bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-lg px-3 py-2 text-xs focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-500 text-stone-800 dark:text-zinc-200 shadow-sm dark:shadow-none"
             placeholder="Ex: Timiș"
           />
         </div>
       </div>
 
+      {/* BUTOANE DE ACȚIUNE ADAPTIVE */}
       <div className="flex gap-2 pt-1">
         <button
           type="button"
           onClick={onCancel}
-          className="flex-1 py-2 bg-zinc-900 hover:bg-zinc-800 border border-zinc-800 text-zinc-400 font-bold text-xs rounded-lg transition-all uppercase tracking-wider"
+          // MODIFICAT: text-stone-500 și hover fin pe gri închis pentru light mode
+          className="flex-1 py-2 bg-stone-200/70 hover:bg-stone-200 dark:bg-zinc-900 dark:hover:bg-zinc-800 border border-stone-300/60 dark:border-zinc-800 text-stone-600 dark:text-zinc-400 font-bold text-xs rounded-lg transition-all uppercase tracking-wider cursor-pointer"
         >
           Anulează
         </button>
         <button
           type="submit"
-          className="flex-1 py-2 bg-zinc-800 hover:bg-zinc-700 text-white font-bold text-xs rounded-lg transition-all uppercase tracking-wider"
+          // MODIFICAT: text-white obligatoriu pe un fundal emerald închis (emerald-600) pe light mode pentru accesibilitate
+          className="flex-1 py-2 bg-emerald-600 dark:bg-zinc-800 hover:bg-emerald-700 dark:hover:bg-zinc-700 text-white font-bold text-xs rounded-lg transition-all uppercase tracking-wider cursor-pointer shadow-sm"
         >
           {submitLabel}
         </button>

@@ -9,8 +9,14 @@ export const CartProvider = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [loading, setLoading] = useState(false);
 
+  const clearCart = () => {
+    setCartItems([]);
+  };
   const fetchCart = async () => {
-    if (!user) return;
+    if (!user || user.role === "admin") {
+      setCartItems([]);
+      return;
+    }
 
     try {
       setLoading(true);
@@ -110,6 +116,7 @@ export const CartProvider = ({ children }) => {
         addToCart,
         updateCartQuantity,
         removeItem,
+        clearCart,
       }}
     >
       {children}

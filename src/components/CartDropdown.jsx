@@ -26,9 +26,11 @@ const CartDropdown = () => {
 
   return (
     <div className="relative" ref={cartRef}>
+      {/* BUTTON TRIGGER COMPLET UNIFORMIZAT */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        className="p-1.5 hover:text-emerald-400 text-zinc-400 transition-colors relative flex items-center justify-center focus:outline-none"
+        // MODIFICAT: Folosește text-current pentru uniformizare totală și primește hover discret ca profilul
+        className="p-2 text-current hover:text-stone-900 dark:hover:text-white transition-colors relative flex items-center justify-center focus:outline-none cursor-pointer rounded-xl hover:bg-stone-50 dark:hover:bg-zinc-900/50"
         aria-label={`Deschide coșul. Ai ${totalItems} produse.`}
         aria-expanded={isOpen}
       >
@@ -47,30 +49,35 @@ const CartDropdown = () => {
           />
         </svg>
         {totalItems > 0 && (
-          <span className="absolute -top-1 -right-1 bg-emerald-500 text-black font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-md">
+          // Bulina rămâne un verde vizibil, adaptat la textul interior
+          <span className="absolute top-0.5 right-0.5 bg-emerald-500 dark:bg-emerald-500 text-white dark:text-zinc-950 font-black text-[9px] w-4 h-4 rounded-full flex items-center justify-center shadow-md">
             {totalItems}
           </span>
         )}
       </button>
 
+      {/* DROPDOWN CONTAINER COMPLET ADAPTIV */}
       {isOpen && (
-        <div className="absolute right-0 mt-3 w-80 bg-[#161616] border border-zinc-800/80 rounded-2xl shadow-2xl p-4 z-50 text-white">
-          <div className="flex justify-between items-center border-b border-zinc-900 pb-2.5 mb-3">
-            <span className="text-xs font-bold text-zinc-400 tracking-wide uppercase">
+        // MODIFICAT: bg-white și border-stone pe light mode / bg-zinc și border-zinc pe dark mode
+        <div className="fixed inset-x-4 top-20 z-50 bg-white dark:bg-zinc-900 border border-stone-200/60 dark:border-zinc-850 rounded-2xl p-4 shadow-xl md:absolute md:top-full md:right-0 md:left-auto md:w-80 md:inset-x-auto md:mt-2 transition-colors duration-300">
+          <div className="flex justify-between items-center border-b border-stone-100 dark:border-zinc-800 pb-2.5 mb-3">
+            <span className="text-xs font-bold text-stone-400 dark:text-zinc-500 tracking-wide uppercase">
               Coș ({totalItems})
             </span>
-            <span className="text-xs text-emerald-400 font-bold">
+            {/* MODIFICAT: Verde închis pe light mode (emerald-700) pentru contrast optim pe fundal alb */}
+            <span className="text-xs text-emerald-700 dark:text-emerald-400 font-bold">
               {totalPrice} RON
             </span>
           </div>
 
           {!cartItems || cartItems.length === 0 ? (
-            <p className="text-zinc-500 text-xs text-center py-6 font-medium">
+            <p className="text-stone-400 dark:text-zinc-500 text-xs text-center py-6 font-medium">
               Coșul tău este gol momentan.
             </p>
           ) : (
             <>
-              <div className="max-h-64 overflow-y-auto space-y-3 pr-1 divide-y divide-zinc-900/40">
+              {/* LISTA DE PRODUSE INTERNĂ */}
+              <div className="max-h-64 overflow-y-auto space-y-3 pr-1 divide-y divide-stone-100 dark:divide-zinc-800/40">
                 {cartItems.map((item) => {
                   const produs = item.product || item.Product || item;
                   return (
@@ -79,32 +86,31 @@ const CartDropdown = () => {
                       className="flex items-center justify-between gap-3 pt-3 first:pt-0"
                     >
                       <div className="flex items-center gap-3 flex-1 min-w-0">
-                        {produs?.image ? (
-                          <img
-                            src={produs.image}
-                            alt=""
-                            className="w-9 h-9 object-cover rounded-xl bg-zinc-950 border border-zinc-900"
-                          />
-                        ) : (
-                          <div className="w-9 h-9 bg-zinc-900 rounded-xl flex items-center justify-center text-sm border border-zinc-800">
-                            📦
-                          </div>
-                        )}
+                        {/* Cutie iconiță placeholder */}
+                        <div
+                          className="w-9 h-9 bg-stone-50 dark:bg-zinc-950 rounded-xl flex items-center justify-center text-sm border border-stone-100 dark:border-zinc-800 shrink-0"
+                          aria-hidden="true"
+                        >
+                          📦
+                        </div>
+
                         <div className="truncate text-xs">
-                          <p className="font-bold truncate text-zinc-200">
+                          <p className="font-bold truncate text-stone-800 dark:text-zinc-200">
                             {produs?.name || "Produs"}
                           </p>
-                          <p className="text-zinc-500 font-medium mt-0.5">
+                          <p className="text-stone-400 dark:text-zinc-500 font-medium mt-0.5">
                             {item.quantity} x{" "}
-                            <span className="text-emerald-400 font-semibold">
+                            <span className="text-emerald-700 dark:text-emerald-400 font-semibold">
                               {produs?.price || 0} RON
                             </span>
                           </p>
                         </div>
                       </div>
+
+                      {/* Buton eliminare element */}
                       <button
                         onClick={() => removeItem(item.id)}
-                        className="text-zinc-600 hover:text-red-400 p-1.5 rounded-lg text-xs font-bold focus:outline-none"
+                        className="text-stone-400 hover:text-rose-600 dark:text-zinc-600 dark:hover:text-red-400 p-1.5 rounded-lg text-xs font-bold focus:outline-none transition-colors cursor-pointer"
                       >
                         ✕
                       </button>
@@ -112,11 +118,14 @@ const CartDropdown = () => {
                   );
                 })}
               </div>
-              <div className="mt-4 pt-3 border-t border-zinc-900">
+
+              {/* BUTONUL „COȘUL MEU” */}
+              <div className="mt-4 pt-3 border-t border-stone-100 dark:border-zinc-800">
                 <Link
                   to="/cart"
                   onClick={() => setIsOpen(false)}
-                  className="w-full py-2.5 bg-emerald-500 hover:bg-emerald-600 text-black font-black text-xs rounded-xl text-center block tracking-wider uppercase focus:outline-none"
+                  // MODIFICAT: bg-emerald-600 cu text alb pe Light Mode, își păstrează stilul contrastant pe Dark Mode
+                  className="w-full py-2.5 bg-emerald-600 hover:bg-emerald-700 dark:bg-emerald-500 dark:hover:bg-emerald-400 text-white dark:text-zinc-950 font-black text-xs rounded-xl text-center block tracking-wider uppercase focus:outline-none transition-all shadow-sm"
                 >
                   Coșul meu
                 </Link>

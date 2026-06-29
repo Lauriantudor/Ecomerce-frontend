@@ -40,12 +40,18 @@ const deleteAddress = async (addressId) => {
   const response = await API.delete(`${baseURL}${addressId}`);
   return response.data;
 };
+
+const getAddressesbyUser = async (userId) => {
+  const response = await API.get(`${baseURL}admin/user/${userId}`);
+  return response.data;
+};
 const addressService = {
   getUserAddresses,
   saveAddress,
   updateAddress,
   adminGetAddresses,
   deleteAddress,
+  getAddressesbyUser,
 };
 
 export default addressService;

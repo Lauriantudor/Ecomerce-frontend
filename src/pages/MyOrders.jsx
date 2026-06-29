@@ -1,15 +1,23 @@
 import React, { useState, useEffect, useRef } from "react";
 import orderService from "../services/orderService";
-import OrderDetailsModal from "../components/OrderDetailsModal"; // Importă componenta nouă
+import OrderDetailsModal from "../components/OrderDetailsModal";
+
+// IMPORTĂ COMPONENTELE TALE EXISTENTE DIN PROIECT
+import OrderFilter from "../components/OrderFilter";
+import Pagination from "../components/Pagination";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
-  // Stări pentru controlul modalului separat
+  // Stările pentru filtrare și paginare compatibile cu componentele tale
+  const [statusFilter, setStatusFilter] = useState("all");
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 5; // Schimbă numărul de comenzi pe pagină după preferință
+
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
-  const lastActiveButtonRef = useRef(null); // Păstrează elementul declanșator
+  const lastActiveButtonRef = useRef(null);
 
   useEffect(() => {
     fetchUserOrders();
@@ -44,23 +52,44 @@ const MyOrders = () => {
   };
 
   const openDetailsModal = (e, order) => {
-    // Salvăm elementul butonului curent pentru a returna focusul ulterior
     lastActiveButtonRef.current = e.currentTarget;
     setSelectedOrderDetails(order);
   };
 
   const closeDetailsModal = () => {
     setSelectedOrderDetails(null);
-    // Returnăm focusul imediat înapoi pe butonul de deschidere
     setTimeout(() => {
       lastActiveButtonRef.current?.focus();
     }, 50);
   };
 
+  // --- LOGICA INTERNĂ DE FILTRARE ȘI PAGINARE ---
+
+  // 1. Filtrare
+  const filteredOrders = orders.filter((order) => {
+    if (statusFilter === "all") return true;
+    if (statusFilter === "pending") {
+      return order.status === "pending" || order.status === "panding";
+    }
+    return order.status === statusFilter;
+  });
+
+  // Schimbare filtru (resetează și pagina la 1)
+  const handleFilterChange = (filterId) => {
+    setStatusFilter(filterId);
+    setCurrentPage(1);
+  };
+
+  // 2. Calcul Paginare
+  const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
+  const indexOfLastItem = currentPage * itemsPerPage;
+  const indexOfFirstItem = indexOfLastItem - itemsPerPage;
+  const currentItems = filteredOrders.slice(indexOfFirstItem, indexOfLastItem);
+
   if (loading) {
     return (
       <div
-        className="min-h-screen bg-[#0c0c0c] text-zinc-500 text-sm flex items-center justify-center"
+        className="flex items-center justify-center py-20 text-sm font-medium text-stone-500 dark:text-zinc-500"
         role="status"
       >
         Se încarcă istoricul comenzilor tale...
@@ -69,16 +98,33 @@ const MyOrders = () => {
   }
 
   return (
-    <div className="min-h-screen bg-[#0c0c0c] text-white py-12 px-4 sm:px-8 md:px-16">
+    // CORECTAT: Container curat și transparent, fără clase de fundal care blochează scroll-ul sau strică designul uniform
+    <div className="py-12 px-4 sm:px-8 md:px-16">
       <div className="max-w-4xl mx-auto">
-        <h1 className="text-3xl font-black tracking-tight mb-8 text-zinc-100 uppercase">
-          Comenzile Mele
-        </h1>
+        {/* Aliniere Header + Filtru ca la structura de Admin */}
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
+          <div>
+            <h1 className="text-3xl font-black tracking-tight text-stone-800 dark:text-zinc-100 uppercase">
+              Comenzile Mele
+            </h1>
+            <p className="text-xs text-stone-500 dark:text-zinc-400 mt-1">
+              Administrează și verifică stadiul livrării pentru comenzile tale.
+            </p>
+          </div>
 
-        {orders.length === 0 ? (
-          <div className="bg-[#121212] border border-zinc-900 rounded-2xl p-8 text-center">
-            <p className="text-zinc-500 text-sm italic">
-              Nu ai plasat nicio comandă până în acest moment.
+          {/* COMPONENTA TA REUTILIZABILĂ DE FILTRARE */}
+          <OrderFilter
+            activeFilter={statusFilter}
+            onFilterChange={handleFilterChange}
+          />
+        </div>
+
+        {filteredOrders.length === 0 ? (
+          <div className="bg-white dark:bg-[#121212] border border-stone-200/60 dark:border-zinc-900 rounded-2xl p-12 text-center shadow-sm">
+            <p className="text-stone-400 dark:text-zinc-500 text-sm italic">
+              {statusFilter === "all"
+                ? "Nu ai plasat nicio comandă până în acest moment."
+                : "Nu există comenzi cu statusul selectat."}
             </p>
           </div>
         ) : (
@@ -87,7 +133,8 @@ const MyOrders = () => {
             role="region"
             aria-label="Istoricul comenzilor tale"
           >
-            {orders.map((order) => {
+            {/* Randerăm doar bucata de comenzi (feliate prin slice) corespunzătoare paginii active */}
+            {currentItems.map((order) => {
               const isPending =
                 order.status === "pending" || order.status === "panding";
               const isCancelling = actionLoadingId === order.id;
@@ -95,15 +142,15 @@ const MyOrders = () => {
               return (
                 <div
                   key={order.id}
-                  className="bg-[#121212] border border-zinc-900 rounded-2xl p-5 md:p-6 space-y-4 transition-all hover:border-zinc-800"
+                  className="bg-white dark:bg-[#121212] border border-stone-200/60 dark:border-zinc-900 rounded-2xl p-5 md:p-6 space-y-4 transition-all hover:border-stone-300 dark:hover:border-zinc-800 shadow-sm"
                 >
-                  {/* Cap Card */}
-                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-zinc-900 pb-3">
+                  {/* Cap Comandă */}
+                  <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-stone-100 dark:border-zinc-900 pb-3">
                     <div className="space-y-0.5">
-                      <h3 className="font-bold text-zinc-200">
+                      <h3 className="font-bold text-stone-800 dark:text-zinc-200">
                         Comanda #{order.id}
                       </h3>
-                      <p className="text-zinc-500 text-xs">
+                      <p className="text-stone-400 dark:text-zinc-500 text-xs">
                         Plasată la data de:{" "}
                         {new Date(order.createdAt).toLocaleDateString("ro-RO")}
                       </p>
@@ -112,12 +159,12 @@ const MyOrders = () => {
                       <span
                         className={`px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-wider ${
                           isPending
-                            ? "bg-amber-500/10 text-amber-400 border border-amber-500/20"
+                            ? "bg-amber-100 dark:bg-amber-500/10 text-amber-800 dark:text-amber-400 border border-amber-200 dark:border-amber-500/20"
                             : order.status === "shipped"
-                              ? "bg-blue-500/10 text-blue-400 border border-blue-500/20"
+                              ? "bg-blue-100 dark:bg-blue-500/10 text-blue-800 dark:text-blue-400 border border-blue-200 dark:border-blue-500/20"
                               : order.status === "delivered"
-                                ? "bg-emerald-500/10 text-emerald-400 border border-emerald-500/20"
-                                : "bg-red-500/10 text-red-400 border border-red-500/20"
+                                ? "bg-emerald-100 dark:bg-emerald-500/10 text-emerald-800 dark:text-emerald-400 border border-emerald-200 dark:border-emerald-500/20"
+                                : "bg-rose-100 dark:bg-red-500/10 text-rose-800 dark:text-red-400 border border-rose-200 dark:border-red-500/20"
                         }`}
                       >
                         {isPending
@@ -131,20 +178,20 @@ const MyOrders = () => {
                     </div>
                   </div>
 
-                  {/* Corp scurt / Prevualizare produse */}
+                  {/* Produse comandate */}
                   <div className="space-y-2">
                     {order.items?.map((item) => (
                       <div
                         key={item.id}
-                        className="flex justify-between text-sm text-zinc-400"
+                        className="flex justify-between text-sm text-stone-600 dark:text-zinc-400"
                       >
                         <span className="truncate max-w-[70%]">
                           {item.product?.name}{" "}
-                          <span className="text-zinc-600 font-bold text-xs">
+                          <span className="text-stone-400 dark:text-zinc-600 font-bold text-xs">
                             x{item.quantity}
                           </span>
                         </span>
-                        <span className="text-zinc-300">
+                        <span className="text-stone-700 dark:text-zinc-300 font-medium">
                           {((item.product?.price || 0) * item.quantity).toFixed(
                             2,
                           )}{" "}
@@ -154,11 +201,11 @@ const MyOrders = () => {
                     ))}
                   </div>
 
-                  {/* Subsol Card cu Butoane */}
-                  <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 pt-3 border-t border-zinc-900/50">
-                    <p className="text-sm text-zinc-400">
+                  {/* Footer Comandă */}
+                  <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 pt-3 border-t border-stone-100 dark:border-zinc-900/50">
+                    <p className="text-sm text-stone-500 dark:text-zinc-400">
                       Total de plată:{" "}
-                      <span className="text-emerald-500 font-black text-base">
+                      <span className="text-emerald-700 dark:text-emerald-500 font-black text-base">
                         {order.totalAmount} RON
                       </span>
                     </p>
@@ -167,8 +214,7 @@ const MyOrders = () => {
                       <button
                         type="button"
                         onClick={(e) => openDetailsModal(e, order)}
-                        className="text-xs font-bold text-zinc-300 hover:text-white border border-zinc-800 hover:border-zinc-700 bg-zinc-900/50 px-4 py-2 rounded-xl transition-all uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-zinc-400"
-                        aria-label={`Vezi detalii complete pentru comanda numărul ${order.id}`}
+                        className="text-xs font-bold text-stone-700 dark:text-zinc-300 hover:text-stone-900 dark:hover:text-white border border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 bg-stone-50 dark:bg-zinc-900/50 px-4 py-2 rounded-xl transition-all uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-zinc-400 cursor-pointer"
                       >
                         Detalii Comandă
                       </button>
@@ -178,8 +224,7 @@ const MyOrders = () => {
                           type="button"
                           disabled={isCancelling}
                           onClick={() => handleCancelOrder(order.id)}
-                          className="text-xs font-bold text-red-500/80 hover:text-red-400 border border-red-950 bg-red-950/20 hover:bg-red-950/40 px-4 py-2 rounded-xl transition-all uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-red-500 disabled:opacity-40"
-                          aria-label={`Anulează comanda numărul ${order.id}`}
+                          className="text-xs font-bold text-rose-600 dark:text-red-400/90 hover:text-rose-700 dark:hover:text-red-400 border border-rose-200 dark:border-red-950 bg-rose-50 dark:bg-red-950/20 hover:bg-rose-100 dark:hover:bg-red-950/40 px-4 py-2 rounded-xl transition-all uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-rose-500 dark:focus:ring-red-500 disabled:opacity-40 cursor-pointer"
                         >
                           {isCancelling ? "Se anulează..." : "Anulează Comanda"}
                         </button>
@@ -189,11 +234,21 @@ const MyOrders = () => {
                 </div>
               );
             })}
+
+            {/* COMPONENTA TA REUTILIZABILĂ DE PAGINARE */}
+            {totalPages > 1 && (
+              <div className="pt-4">
+                <Pagination
+                  currentPage={currentPage}
+                  totalPages={totalPages}
+                  onPageChange={setCurrentPage}
+                />
+              </div>
+            )}
           </div>
         )}
       </div>
 
-      {/* RENDER POP-UP SEPARAT */}
       <OrderDetailsModal
         order={selectedOrderDetails}
         onClose={closeDetailsModal}

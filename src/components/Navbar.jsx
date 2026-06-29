@@ -2,23 +2,28 @@ import React, { useState } from "react";
 import { Link } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import CartDropdown from "./CartDropdown";
-
 import MobileMenu from "./MobileMenu";
 import ProfileDropdown from "./ProfileDropDown";
+
+// IMPORTĂM COMPONENTA DE SCHIMBARE TEMĂ
+import ThemeToggle from "./ThemeToggle";
 
 const Navbar = () => {
   const { user, openAuthModal } = useAuth();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
+  const isAdmin = user?.role === "admin";
+
   return (
     <>
-      <nav className="bg-[#121212] border-b border-zinc-900 text-white px-4 sm:px-6 py-4 flex items-center justify-between relative z-50">
+      {/* CONTAINER ADAPTIV: Fundal alb pe Light Mode, Gri Închis în Dark Mode */}
+      <nav className="bg-white dark:bg-[#121212] border-b border-stone-200/60 dark:border-zinc-900 text-stone-800 dark:text-white px-4 sm:px-6 py-4 flex items-center justify-between relative z-50 transition-colors duration-300">
         {/* PARTEA STÂNGĂ: Hamburger + Logo + Link-uri Desktop */}
         <div className="flex items-center gap-4 flex-1">
           {/* BUTON HAMBURGER MOBIL */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
-            className="flex md:hidden flex-col gap-1.5 p-1 text-zinc-400 hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg"
+            className="flex md:hidden flex-col gap-1.5 p-1 text-stone-500 dark:text-zinc-400 hover:text-stone-800 dark:hover:text-white transition-colors focus:outline-none focus:ring-2 focus:ring-emerald-500 rounded-lg"
             aria-label="Meniu principal"
             aria-expanded={isMenuOpen}
             aria-controls="mobile-navigation"
@@ -37,38 +42,74 @@ const Navbar = () => {
           {/* BRAND / LOGO */}
           <Link
             to="/"
-            className="text-xl font-black tracking-wider text-emerald-500 font-sans focus:outline-none focus:text-emerald-400 shrink-0"
+            className="text-xl font-black tracking-wider text-emerald-600 dark:text-emerald-500 font-sans focus:outline-none focus:text-emerald-500 shrink-0"
           >
             E-COMMERCE
           </Link>
 
-          {/* LINK-URI DESKTOP */}
-          <div className="hidden md:flex gap-6 text-sm text-zinc-400 font-medium ml-6">
-            <Link
-              to="/"
-              className="hover:text-white transition-colors focus:outline-none focus:text-white"
-            >
-              Acasă
-            </Link>
-            <Link
-              to="/produse"
-              className="hover:text-white transition-colors focus:outline-none focus:text-white"
-            >
-              Produse
-            </Link>
-            <Link
-              to="/about"
-              className="hover:text-white transition-colors focus:outline-none focus:text-white"
-            >
-              Despre Noi
-            </Link>
+          {/* LINK-URI DESKTOP ADAPTIVE */}
+          <div className="hidden md:flex gap-6 text-sm font-medium ml-6">
+            {!isAdmin ? (
+              <>
+                <Link
+                  to="/"
+                  className="text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors focus:outline-none"
+                >
+                  Acasă
+                </Link>
+
+                <Link
+                  to="/contact"
+                  className="text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors focus:outline-none"
+                >
+                  Contact
+                </Link>
+              </>
+            ) : (
+              <>
+                <Link
+                  to="/"
+                  className="text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors focus:outline-none"
+                >
+                  Vezi Magazinul
+                </Link>
+
+                <Link
+                  to="/admin/produse"
+                  // MODIFICAT: text-emerald-700 pe light mode pentru lizibilitate maximă
+                  className="text-emerald-700 dark:text-emerald-400 hover:text-emerald-600 dark:hover:text-emerald-300 font-bold border-b-2 border-emerald-500/20 px-0.5 transition-all"
+                >
+                  Gestiune Produse 🛠️
+                </Link>
+
+                <Link
+                  to="/admin/comenzi"
+                  // MODIFICAT: De la amber-600 (prea șters) la amber-800 pe light, păstrând amber-400 pe dark
+                  className="text-amber-800 dark:text-amber-400 hover:text-amber-700 dark:hover:text-amber-300 font-bold border-b-2 border-amber-500/20 px-0.5 transition-all"
+                >
+                  Management Comenzi 📦
+                </Link>
+
+                <Link
+                  to="/admin/mesaje"
+                  // MODIFICAT: text-indigo-700 pe light mode și border-indigo pentru a se separa complet de galbenul de la comenzi
+                  className="text-indigo-700 dark:text-indigo-400 hover:text-indigo-600 dark:hover:text-indigo-300 font-bold border-b-2 border-indigo-500/30 dark:border-indigo-500/20 px-0.5 transition-all"
+                >
+                  Management Mesaje ✉️
+                </Link>
+              </>
+            )}
           </div>
         </div>
 
-        {/* PARTEA DREAPTĂ: Control Coș & Profil */}
-        <div className="flex items-center gap-4 shrink-0">
+        {/* PARTEA DREAPTĂ: Control Coș, Theme Toggle & Profil */}
+        {/* MODIFICAT: Toate iconițele din acest wrapper împart acum o clasă părinte pentru uniformizarea culorilor default și hover */}
+        <div className="flex items-center gap-2 sm:gap-4">
+          {/* BUTONUL DE TOGGLE LIGHT / DARK */}
+          <ThemeToggle />
+
           {/* COȘ DE CUMPĂRĂTURI */}
-          {user && <CartDropdown />}
+          {user && !isAdmin && <CartDropdown />}
 
           {/* STATUS PROFIL SAU AUTENTIFICARE */}
           {user ? (
@@ -79,7 +120,8 @@ const Navbar = () => {
               onClick={() => {
                 if (typeof openAuthModal === "function") openAuthModal();
               }}
-              className="p-2 text-zinc-400 hover:text-white transition-colors flex items-center justify-center focus:outline-none cursor-pointer"
+              // MODIFICAT: Sincronizat cu stilul profilului logat (hover pe gri închis pe light / alb pe dark)
+              className="p-2 text-stone-500 dark:text-zinc-400 hover:text-stone-950 dark:hover:text-white transition-colors flex items-center justify-center focus:outline-none cursor-pointer rounded-xl hover:bg-stone-50 dark:hover:bg-zinc-900/50"
               aria-label="Deschide formularul de autentificare"
             >
               <svg

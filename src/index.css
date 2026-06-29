@@ -1,16 +1,20 @@
-/* @tailwind base;
-@tailwind components;
-@tailwind utilities; */
 @import "tailwindcss";
+
+@variant dark (&:where(.dark, .dark *));
 
 html,
 body,
 #root {
-  background-color: #09090b !important; /* Codul HEX pentru bg-zinc-950 */
-  color: #f4f4f5; /* text-zinc-100 */
-  min-height: 100vh;
+  min-height: 100dvh; /* CORECTAT: 100dvh pentru a preveni problemele pe mobil */
   margin: 0;
   padding: 0;
+  /* CORECTAT: Înlocuit bg-zinc-50 cu bg-stone-50 (vanilie) și text-stone-800 pentru un contrast cald */
+  @apply bg-[#faf8f0] dark:bg-zinc-950 text-stone-800 dark:text-zinc-800 transition-colors duration-300;
+}
+
+/* Când clasa .dark este activată, trecem pe tema carbon/zinc închis */
+html.dark body {
+  @apply bg-zinc-950 text-zinc-100;
 }
 
 @source "./**/*.{js,jsx,ts,tsx}";

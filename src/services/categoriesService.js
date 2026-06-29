@@ -11,7 +11,46 @@ const getCategories = async () => {
     throw error;
   }
 };
-const catrgoryService = {
-  getCategories,
+const getCategoryById = async (categoryId) => {
+  try {
+    const response = await API.get(`${baseURL}${categoryId}`);
+    console.log(response);
+    return response.data;
+  } catch (error) {
+    console.error("Eroare la aducerea categoriei:", error);
+    throw error;
+  }
 };
-export default catrgoryService;
+const saveCategory = async (name) => {
+  try {
+    const response = await API.post(`${baseURL}admin`, { name });
+    return response.data;
+  } catch (error) {
+    console.error("Eroare la salvarea categoriei", error);
+    throw error;
+  }
+};
+const updateCategory = async (categoryId, cartegoryData) => {
+  try {
+    const response = await API.put(`${baseURL}admin/${categoryId}`, {
+      name: cartegoryData.name,
+    });
+
+    return response.data;
+  } catch (error) {
+    console.error("Eroare la modificare categoriei", error);
+    throw error;
+  }
+};
+const deleteCategory = async (categoryId) => {
+  const response = await API.delete(`${baseURL}admin/${categoryId}`);
+  return response.data;
+};
+const categoryService = {
+  getCategories,
+  getCategoryById,
+  saveCategory,
+  updateCategory,
+  deleteCategory,
+};
+export default categoryService;
