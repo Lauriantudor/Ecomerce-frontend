@@ -19,8 +19,6 @@ function App() {
 
   // Helper pentru a proteja rutele de Admin
   const AdminRoute = ({ children }) => {
-    // Dacă încă se încarcă starea sau dacă token-ul este verificat în background,
-    // blocăm randarea pentru a preveni un redirect fals de tip "păcăleală"
     if (loading) {
       return (
         <div className="flex items-center justify-center font-medium py-20 text-stone-600 dark:text-zinc-400">
@@ -29,34 +27,36 @@ function App() {
       );
     }
 
-    // Verificare strictă de rol
     if (user && user.role === "admin") {
       return children;
     }
 
-    // Dacă utilizatorul nu este admin sau nu e logat, îl trimitem politicos pe Home
     return <Navigate to="/" replace />;
   };
 
   return (
-    <>
+    /* 
+      AICI ESTE SCHIMBAREA: Am înlocuit <> cu acest div structural.
+      El forțează aplicația să aibă cel puțin înălțimea ecranului și aliniază componentele pe verticală.
+    */
+    <div className="flex flex-col min-h-screen bg-[#faf8f0] dark:bg-zinc-950 text-stone-900 dark:text-white transition-colors duration-300">
       <header>
         <Navbar />
       </header>
 
-      <main className="w-full">
+      {/* `flex-grow` îi spune main-ului să ocupe tot spațiul rămas liber, împingând footer-ul jos */}
+      <main className="w-full flex-grow">
         <AuthModal />
 
         <Routes>
           {/* RUTE PUBLICE / CLIENȚI */}
           <Route path="/" element={<Home />} />
-          <Route path="/produse" element={<Home />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/comenzile-mele" element={<MyOrders />} />
           <Route path="/contact" element={<ContactForm />} />
 
-          {/* RUTE PROTEJATE ADMIN (Toate sunt trecute acum prin filtrul de securitate) */}
+          {/* RUTE PROTEJATE ADMIN */}
           <Route
             path="/admin/produse"
             element={
@@ -82,14 +82,16 @@ function App() {
             }
           />
 
-          {/* CORECTAT: Redirecționare corectă pentru pagini inexistente în v6 */}
+          {/* Redirecționare corectă pentru pagini inexistente */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
+      {/* Footer-ul va sta acum lipit de marginea de jos pe paginile goale, dar va coborî natural pe paginile lungi */}
       <Footer />
+
       <Toaster position="bottom-right" richColors closeButton />
-    </>
+    </div>
   );
 }
 
