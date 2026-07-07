@@ -39,16 +39,13 @@ function CategoryManager({
   };
 
   return (
-    // MODIFICAT: bg-white și border-stone-200 pe light mode
     <div className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl p-4 sm:p-6 shadow-sm dark:shadow-xl space-y-4 transition-colors duration-300">
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-3">
         <div>
-          {/* MODIFICAT: text-stone-800 pe light mode */}
           <h2 className="text-sm font-black uppercase tracking-wider text-stone-800 dark:text-zinc-300">
             Management Categorii Existente
           </h2>
-          {/* MODIFICAT: text-stone-500 pe light mode */}
-          <p className="text-xs text-stone-500 dark:text-zinc-500">
+          <p className="text-xs text-stone-600 dark:text-zinc-400">
             Editează numele sau elimină categoriile din baza de date.
           </p>
         </div>
@@ -57,7 +54,6 @@ function CategoryManager({
             setIsCreatingCategory(!isCreatingCategory);
             setEditingCategoryId(null);
           }}
-          // MODIFICAT: bg-stone-100, text-stone-700 și hover:bg-stone-200 pe light mode
           className="w-full sm:w-auto bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 dark:hover:text-white px-3 py-2 rounded-xl text-xs font-bold flex items-center justify-center gap-1 transition-all border border-stone-200 dark:border-zinc-700/40 cursor-pointer"
         >
           <span>{isCreatingCategory ? "Închide" : "➕ Categorie Nouă"}</span>
@@ -67,19 +63,16 @@ function CategoryManager({
       <div className="flex flex-wrap gap-2 sm:gap-3 pt-2">
         {/* Adăugare Inline */}
         {isCreatingCategory && (
-          // MODIFICAT: bg-emerald-50/50 și border-emerald-200 pe light mode
           <div className="flex items-center gap-2 bg-emerald-50/50 dark:bg-emerald-50/5 border border-emerald-200 dark:border-emerald-50/20 rounded-xl px-3 py-2 text-sm w-full sm:w-auto justify-between sm:justify-start">
             <input
               type="text"
               placeholder="Nume..."
               value={newCategoryNameInline}
               onChange={(e) => setNewCategoryNameInline(e.target.value)}
-              // MODIFICAT: bg-white, border-stone-200 și text-stone-800 pe light mode
               className="bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-lg text-xs px-2 py-1 text-stone-800 dark:text-white w-28 sm:w-32 focus:outline-none focus:border-emerald-500 shadow-sm dark:shadow-none"
               autoFocus
             />
             <div className="flex gap-2">
-              {/* MODIFICAT: text-emerald-700 pe light mode pentru contrast ridicat */}
               <button
                 onClick={handleSaveCreate}
                 className="text-emerald-700 dark:text-emerald-400 font-bold text-xs hover:text-emerald-800 dark:hover:text-emerald-300 transition-colors cursor-pointer"
@@ -91,7 +84,7 @@ function CategoryManager({
                   setIsCreatingCategory(false);
                   setNewCategoryNameInline("");
                 }}
-                className="text-stone-400 dark:text-zinc-500 font-bold text-xs hover:text-stone-600 dark:hover:text-zinc-400 transition-colors cursor-pointer"
+                className="text-stone-600 dark:text-zinc-400 font-bold text-xs hover:text-stone-800 dark:hover:text-zinc-200 transition-colors cursor-pointer"
               >
                 Anulează
               </button>
@@ -103,7 +96,6 @@ function CategoryManager({
         {categories.map((cat) => (
           <div
             key={cat.id}
-            // MODIFICAT: bg-stone-50 și border-stone-200 pe light mode
             className="flex items-center gap-2 bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl px-3 py-2 text-sm max-w-full transition-colors"
           >
             {editingCategoryId === cat.id ? (
@@ -112,7 +104,6 @@ function CategoryManager({
                   type="text"
                   value={editingCategoryName}
                   onChange={(e) => setEditingCategoryName(e.target.value)}
-                  // MODIFICAT: bg-white, border-stone-300 și text-stone-800 pe light mode
                   className="bg-white dark:bg-zinc-900 border border-stone-300 dark:border-zinc-700 rounded-lg text-xs px-2 py-1 text-stone-800 dark:text-white w-24 sm:w-28 focus:outline-none focus:border-emerald-500 shadow-sm"
                 />
                 <button
@@ -123,33 +114,28 @@ function CategoryManager({
                 </button>
                 <button
                   onClick={handleCancelEdit}
-                  className="text-stone-400 dark:text-zinc-500 font-bold text-xs hover:underline cursor-pointer"
+                  className="text-stone-600 dark:text-zinc-400 font-bold text-xs hover:underline cursor-pointer"
                 >
                   X
                 </button>
               </div>
             ) : (
               <>
-                {/* MODIFICAT: text-stone-800 pe light mode */}
                 <span className="font-medium text-stone-800 dark:text-zinc-200 capitalize truncate max-w-30 sm:max-w-50">
                   {cat.name}
                 </span>
-                {/* MODIFICAT: border-stone-200 pe light mode */}
                 <div className="flex items-center gap-1.5 ml-1 border-l border-stone-200 dark:border-zinc-800 pl-1.5 shrink-0">
                   <button
                     onClick={() => handleStartEdit(cat)}
-                    // MODIFICAT: text-stone-500 și hover:text-stone-900 pe light mode
-                    className="text-xs text-stone-500 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white font-medium cursor-pointer transition-colors"
+                    className="text-xs text-stone-600 hover:text-stone-900 dark:text-zinc-400 dark:hover:text-white font-medium cursor-pointer transition-colors"
                   >
                     Editează
                   </button>
-                  {/* MODIFICAT: text-stone-300 separator pe light mode */}
                   <span className="text-stone-300 dark:text-zinc-700 text-xs select-none">
                     |
                   </span>
                   <button
                     onClick={() => onDeleteCategory(cat.id, cat.name)}
-                    // MODIFICAT: text-rose-600 și hover:text-rose-800 pe light mode
                     className="text-xs text-rose-600 hover:text-rose-800 dark:text-rose-400 dark:hover:text-rose-300 font-medium cursor-pointer transition-colors"
                   >
                     Șterge
@@ -161,8 +147,7 @@ function CategoryManager({
         ))}
 
         {categories.length === 0 && !isCreatingCategory && (
-          // MODIFICAT: text-stone-400 pe light mode
-          <p className="text-xs text-stone-400 dark:text-zinc-500 italic px-1 py-1">
+          <p className="text-xs text-stone-500 dark:text-zinc-500 italic px-1 py-1">
             Nu există nicio categorie în baza de date.
           </p>
         )}

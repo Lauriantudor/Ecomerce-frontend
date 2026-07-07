@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from "react";
-import categoryService from "../services/categoriesService";
+import categoryService from "../../services/categoriesService";
 
 function CategorySidebar({
   selectedCategory,
@@ -24,7 +24,7 @@ function CategorySidebar({
         console.error("Error fetching the categories: " + error);
         setError(error);
       } finally {
-        setLoading(false);
+        loading && setLoading(false);
       }
     };
     fetchCategories();
@@ -33,7 +33,7 @@ function CategorySidebar({
   if (loading) {
     return (
       <aside className="w-full md:w-64 flex-shrink-0">
-        <div className="bg-white dark:bg-zinc-900 border border-stone-200/60 dark:border-zinc-800 rounded-2xl p-5 text-stone-400 text-sm animate-pulse shadow-sm">
+        <div className="bg-white dark:bg-zinc-900 border border-stone-200/60 dark:border-zinc-800 rounded-2xl p-5 text-stone-500 dark:text-zinc-400 text-sm animate-pulse shadow-sm">
           Se încarcă categoriile...
         </div>
       </aside>
@@ -44,27 +44,41 @@ function CategorySidebar({
 
   return (
     <aside className="w-full md:w-64 flex-shrink-0">
-      {/* SIDEBAR CONTAINER: Margini calde stone-200/60 și umbră fină pe light */}
       <div className="bg-white dark:bg-zinc-900 border border-stone-200/60 dark:border-zinc-800 rounded-2xl p-5 sticky top-24 shadow-sm transition-colors duration-300">
-        <h2 className="text-sm font-black text-stone-700 dark:text-zinc-400 uppercase tracking-wider mb-4 px-1">
+        <h2
+          id="sidebar-categories-title"
+          className="text-sm font-black text-stone-700 dark:text-zinc-400 uppercase tracking-wider mb-4 px-1"
+        >
           Categorii
         </h2>
 
-        <ul className="space-y-1.5">
+        <ul
+          role="tablist"
+          aria-labelledby="sidebar-categories-title"
+          className="space-y-1.5"
+        >
           {/* ─── OPȚIUNEA: TOATE PRODUSELE ─── */}
-          <li>
+          <li role="presentation">
             <button
               onClick={() => onSelectCategory("all")}
+              role="tab"
+              aria-selected={selectedCategory === "all" ? "true" : "false"}
               className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center justify-between ${
                 selectedCategory === "all"
-                  ? "bg-emerald-600/10 text-emerald-800 dark:text-emerald-400 border border-emerald-600/10 dark:border-emerald-500/20 font-semibold"
-                  : "text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-50 dark:hover:bg-zinc-800/50 border border-transparent"
+                  ? "bg-emerald-600/10 text-emerald-900 dark:text-emerald-400 border border-emerald-600/10 dark:border-emerald-500/20 font-semibold"
+                  : "text-stone-700 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-50 dark:hover:bg-zinc-800/50 border border-transparent"
               }`}
             >
               <span>Toate produsele</span>
 
-              {/* Badge contor produse adaptat la stilul cald */}
-              <span className="text-xs bg-stone-50 dark:bg-zinc-700 text-stone-700 dark:text-zinc-100 px-2.5 py-0.5 rounded-md font-black shadow-none border border-stone-200/60 dark:border-zinc-600/30">
+              <span className="sr-only">
+                , {totalImutabilProduse} produse disponibile
+              </span>
+
+              <span
+                aria-hidden="true"
+                className="text-xs bg-stone-50 dark:bg-zinc-700 text-stone-700 dark:text-zinc-100 px-2.5 py-0.5 rounded-md font-black shadow-none border border-stone-200/60 dark:border-zinc-600/30"
+              >
                 {totalImutabilProduse}
               </span>
             </button>
@@ -74,15 +88,18 @@ function CategorySidebar({
           {categories.map((cat) => {
             const catId = typeof cat === "object" ? cat?.id : cat;
             const catName = typeof cat === "object" ? cat?.name : cat;
+            const isSelected = selectedCategory === catId;
 
             return (
-              <li key={catId}>
+              <li key={catId} role="presentation">
                 <button
                   onClick={() => onSelectCategory(catId)}
+                  role="tab"
+                  aria-selected={isSelected ? "true" : "false"}
                   className={`w-full text-left px-4 py-2.5 rounded-xl text-sm font-medium transition-all cursor-pointer flex items-center capitalize ${
-                    selectedCategory === catId
-                      ? "bg-emerald-600/10 text-emerald-800 dark:text-emerald-400 border border-emerald-600/10 dark:border-emerald-500/20 font-semibold"
-                      : "text-stone-950 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-50 dark:hover:bg-zinc-800/50 border border-transparent"
+                    isSelected
+                      ? "bg-emerald-600/10 text-emerald-900 dark:text-emerald-400 border border-emerald-600/10 dark:border-emerald-500/20 font-semibold"
+                      : "text-stone-700 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-zinc-200 hover:bg-stone-50 dark:hover:bg-zinc-800/50 border border-transparent"
                   }`}
                 >
                   <span className="truncate">{catName}</span>

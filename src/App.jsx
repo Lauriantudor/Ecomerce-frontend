@@ -1,8 +1,9 @@
 import React from "react";
 import { Routes, Route, Navigate } from "react-router-dom";
 import Navbar from "./components/Navbar";
-import AuthModal from "./components/AuthModal";
+import AuthModal from "./components/auth/AuthModal";
 import { useAuth } from "./context/AuthContext";
+import { Toaster } from "sonner";
 import Home from "./pages/Home";
 import ProductDetails from "./pages/ProductDetails";
 import Cart from "./pages/Cart";
@@ -11,34 +12,38 @@ import AdminProducts from "./pages/AdminProducts";
 import AdminOrders from "./pages/AdminOrders";
 import AdminMessages from "./pages/AdminMessages";
 import ContactForm from "./pages/ContactForm";
+import Footer from "./components/Footer";
 
 function App() {
   const { user, loading } = useAuth();
 
-  // Componentă Helper pentru a proteja rutele de Admin
+  // Helper pentru a proteja rutele de Admin
   const AdminRoute = ({ children }) => {
-    if (loading)
+    // Dacă încă se încarcă starea sau dacă token-ul este verificat în background,
+    // blocăm randarea pentru a preveni un redirect fals de tip "păcăleală"
+    if (loading) {
       return (
-        // CURĂȚAT: Fără min-h direct sau bg, lasă layout-ul global din CSS să preia controlul
-        <div className="flex items-center justify-center font-medium py-20">
-          Se verifică drepturile...
+        <div className="flex items-center justify-center font-medium py-20 text-stone-600 dark:text-zinc-400">
+          Se verifică drepturile de acces...
         </div>
       );
-    return user && user.role === "admin" ? (
-      children
-    ) : (
-      <Navigate to="/" replace />
-    );
+    }
+
+    // Verificare strictă de rol
+    if (user && user.role === "admin") {
+      return children;
+    }
+
+    // Dacă utilizatorul nu este admin sau nu e logat, îl trimitem politicos pe Home
+    return <Navigate to="/" replace />;
   };
 
   return (
-    // CORECTAT: Am șters bg-zinc-50, dark:bg-zinc-950, text-zinc-800 și transition.
-    // Acum <main> este complet transparent și se va folosi exclusiv culoarea stabilă de vanilie (bg-stone-50) setată global în index.css.
     <>
-      {" "}
       <header>
         <Navbar />
       </header>
+
       <main className="w-full">
         <AuthModal />
 
@@ -51,7 +56,7 @@ function App() {
           <Route path="/comenzile-mele" element={<MyOrders />} />
           <Route path="/contact" element={<ContactForm />} />
 
-          {/* RUTE PROTEJATE ADMIN */}
+          {/* RUTE PROTEJATE ADMIN (Toate sunt trecute acum prin filtrul de securitate) */}
           <Route
             path="/admin/produse"
             element={
@@ -60,13 +65,30 @@ function App() {
               </AdminRoute>
             }
           />
-          <Route path="/admin/comenzi" element={<AdminOrders />} />
-          <Route path="/admin/mesaje" element={<AdminMessages />} />
+          <Route
+            path="/admin/comenzi"
+            element={
+              <AdminRoute>
+                <AdminOrders />
+              </AdminRoute>
+            }
+          />
+          <Route
+            path="/admin/mesaje"
+            element={
+              <AdminRoute>
+                <AdminMessages />
+              </AdminRoute>
+            }
+          />
 
-          {/* Redirecționare fallback pentru pagini inexistente */}
-          <Route path="*" replace to="/" />
+          {/* CORECTAT: Redirecționare corectă pentru pagini inexistente în v6 */}
+          <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
+
+      <Footer />
+      <Toaster position="bottom-right" richColors closeButton />
     </>
   );
 }

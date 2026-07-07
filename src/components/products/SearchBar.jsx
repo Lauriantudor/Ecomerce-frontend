@@ -4,10 +4,10 @@ function SearchBar({ searchQuery, onSearchChange }) {
   return (
     <div className="w-full max-w-md mb-6">
       <div className="relative flex items-center">
-        {/* Iconița de lupă - adaptată cu text-stone-400 cald */}
+        {/* Iconița de lupă - adaptată pentru contrast optim */}
         <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
           <svg
-            className="h-5 w-5 text-stone-400 dark:text-zinc-500"
+            className="h-5 w-5 text-stone-500 dark:text-zinc-400"
             fill="none"
             viewBox="0 0 24 24"
             stroke="currentColor"
@@ -21,28 +21,28 @@ function SearchBar({ searchQuery, onSearchChange }) {
           </svg>
         </div>
 
-        {/* INPUT ADAPTIV: Bordură și text stone pe light mode, focus pe smarald */}
+        {/* INPUT ADAPTIV: Contrast mărit pe placeholder și focus solid pe smarald */}
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => onSearchChange(e.target.value)}
           placeholder="Caută un produs sau o categorie..."
-          className="w-full pl-11 pr-10 py-3 bg-white dark:bg-zinc-900 border border-stone-200/60 dark:border-zinc-800 rounded-2xl text-sm text-stone-900 dark:text-zinc-100 placeholder-stone-400 dark:placeholder-zinc-500 focus:outline-none focus:border-emerald-500/50 focus:ring-1 focus:ring-emerald-500/30 transition-all shadow-sm dark:shadow-inner"
+          className="w-full pl-11 pr-10 py-3 bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl text-sm text-stone-900 dark:text-zinc-100 placeholder-stone-500 dark:placeholder-zinc-400 focus:outline-none focus:border-emerald-600 dark:focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950/50 transition-all shadow-sm dark:shadow-inner"
         />
 
-        {/* Butonul de ștergere text (X) */}
+        {/* Butonul de ștergere text (X) cu stări de focus accesibile */}
         {searchQuery && (
           <button
             onClick={() => onSearchChange("")}
-            className="absolute inset-y-0 right-0 pr-4 flex items-center text-stone-400 dark:text-zinc-500 hover:text-stone-600 dark:hover:text-zinc-300 transition-colors cursor-pointer"
+            className="absolute right-2 top-1/2 -translate-y-1/2 p-1.5 text-stone-500 dark:text-zinc-400 hover:text-stone-700 dark:hover:text-zinc-200 transition-colors cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-zinc-600 rounded-lg"
             aria-label="Șterge textul căutat"
           >
             <svg
-              className="h-5 w-5"
+              className="h-4 w-4"
               fill="none"
               viewBox="0 0 24 24"
               stroke="currentColor"
-              strokeWidth="2"
+              strokeWidth="2.5"
             >
               <path
                 strokeLinecap="round"

@@ -1,9 +1,10 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import productService from "../services/productService";
 import categoriesService from "../services/categoriesService";
-import ProductFormModal from "../components/ProductFormModal";
-import CategoryManager from "../components/CategoryManager";
-import ProductTable from "../components/ProductTable";
+import ProductFormModal from "../components/products/ProductFormModal";
+import CategoryManager from "../components/products/CategoryManager";
+import ProductTable from "../components/products/ProductTable";
+import { toast } from "sonner";
 
 function AdminProducts() {
   const [products, setProducts] = useState([]);
@@ -12,6 +13,9 @@ function AdminProducts() {
   const [error, setError] = useState("");
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingProduct, setEditingProduct] = useState(null);
+
+  // Referință esențială pentru controlul focusului la închiderea modalelor
+  const lastFocusedElementRef = useRef(null);
 
   const loadData = async () => {
     try {
@@ -34,13 +38,25 @@ function AdminProducts() {
   }, []);
 
   const handleOpenCreateModal = () => {
+    lastFocusedElementRef.current = document.activeElement;
     setEditingProduct(null);
     setIsModalOpen(true);
   };
 
   const handleOpenEditModal = (product) => {
+    lastFocusedElementRef.current = document.activeElement;
     setEditingProduct(product);
     setIsModalOpen(true);
+  };
+
+  const handleCloseModal = () => {
+    setIsModalOpen(false);
+    // Returnăm focusul pe elementul din tabel sau din header care a deschis acțiunea
+    setTimeout(() => {
+      if (lastFocusedElementRef.current) {
+        lastFocusedElementRef.current.focus();
+      }
+    }, 0);
   };
 
   const handleFormSubmit = async (modalData) => {
@@ -73,17 +89,19 @@ function AdminProducts() {
 
       if (editingProduct) {
         await productService.updateProduct(editingProduct.id, formDataToSend);
-        alert("Produsul a fost actualizat!");
+        toast.success("Produsul a fost actualizat cu succes!");
       } else {
         await productService.saveProduct(formDataToSend);
-        alert("Produsul a fost adăugat!");
+        toast.success("Produsul a fost adăugat în catalog!");
       }
 
-      setIsModalOpen(false);
+      handleCloseModal();
       loadData();
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || err.message || "Eroare la salvare.");
+      toast.error(
+        err.response?.data?.message || err.message || "Eroare la salvare.",
+      );
     }
   };
 
@@ -91,40 +109,48 @@ function AdminProducts() {
     if (!window.confirm("Sigur vrei să ștergi acest produs?")) return;
     try {
       await productService.deleteProduct(id);
-      alert("Produs eliminat.");
+      toast.success("Produsul a fost eliminat din baza de date.");
       loadData();
     } catch (err) {
-      alert("Eroare la ștergerea produsului.");
+      console.error(err);
+      toast.error("Eroare la ștergerea produsului.");
     }
   };
 
   const handleUpdateStock = async (id, qty) => {
     try {
       await productService.addStock(id, qty);
-      alert("Stoc actualizat cu succes!");
+      toast.success("Stocul a fost actualizat cu succes!");
       loadData();
     } catch (err) {
-      alert("Eroare la actualizarea stocului.");
+      console.error(err);
+      toast.error("Eroare la actualizarea stocului.");
     }
   };
 
   const handleSaveCategory = async (name) => {
     try {
       await categoriesService.saveCategory(name);
-      alert("Categorie nouă salvată!");
+      toast.success(`Categoria "${name}" a fost salvată!`);
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || "Eroare la salvarea categoriei.");
+      console.error(err);
+      toast.error(
+        err.response?.data?.message || "Eroare la salvarea categoriei.",
+      );
     }
   };
 
   const handleUpdateCategory = async (id, newName) => {
     try {
       await categoriesService.updateCategory(id, { name: newName });
-      alert("Categoria a fost modificată!");
+      toast.success("Categoria a fost modificată!");
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || "Eroare la modificarea categoriei.");
+      console.error(err);
+      toast.error(
+        err.response?.data?.message || "Eroare la modificarea categoriei.",
+      );
     }
   };
 
@@ -137,54 +163,65 @@ function AdminProducts() {
       return;
     try {
       await categoriesService.deleteCategory(id);
-      alert("Categoria a fost ștearsă!");
+      toast.success("Categoria a fost ștearsă definitiv.");
       loadData();
     } catch (err) {
-      alert(err.response?.data?.message || "Eroare la ștergerea categoriei.");
+      console.error(err);
+      toast.error(
+        err.response?.data?.message || "Eroare la ștergerea categoriei.",
+      );
     }
   };
 
-  if (loading)
+  if (loading) {
     return (
-      // MODIFICAT: Fundal adaptiv stone-50 / zinc-950 pentru starea de loading
-      <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 text-stone-500 dark:text-zinc-400 flex items-center justify-center font-medium p-4 text-center transition-colors duration-300">
-        Se încarcă datele...
+      <div
+        role="status"
+        aria-live="polite"
+        className="min-h-screen bg-stone-50 dark:bg-zinc-950 text-stone-600 dark:text-zinc-400 flex items-center justify-center font-medium p-4 text-center transition-colors duration-300"
+      >
+        Se încarcă datele de administrare...
       </div>
     );
-  if (error)
+  }
+
+  if (error) {
     return (
-      // MODIFICAT: Fundal adaptiv stone-50 / zinc-950 pentru starea de eroare
-      <div className="min-h-screen bg-stone-50 dark:bg-zinc-950 text-rose-600 dark:text-rose-400 flex items-center justify-center font-medium p-4 text-center transition-colors duration-300">
+      <div
+        role="alert"
+        aria-live="assertive"
+        className="min-h-screen bg-stone-50 dark:bg-zinc-950 text-rose-600 dark:text-rose-400 flex items-center justify-center font-medium p-4 text-center transition-colors duration-300"
+      >
+        <span aria-hidden="true" className="mr-2">
+          ⚠️
+        </span>{" "}
         {error}
       </div>
     );
+  }
 
   return (
-    // MODIFICAT: bg-stone-50 pe light mode, culori adaptate pentru text principal
-    <main className="min-h-screen bg-stone-50 dark:bg-zinc-950 text-stone-800 dark:text-zinc-100 py-6 sm:py-8 px-3 sm:px-6 lg:px-8 transition-colors duration-300">
-      <div className="max-w-7xl mx-auto space-y-6 sm:space-y-10">
-        {/* Antet flexibil și adaptabil pe ecrane mici */}
-        {/* MODIFICAT: Border discret adaptiv */}
-        <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stone-200 dark:border-zinc-900 pb-6">
-          <div>
-            {/* MODIFICAT: text-stone-900 pe light mode */}
-            <h1 className="text-lg sm:text-xl font-black text-stone-900 dark:text-white tracking-tight uppercase">
-              Dashboard Administrare
-            </h1>
-            {/* MODIFICAT: text-stone-400 pe light mode */}
-            <p className="text-xs text-stone-500 dark:text-zinc-500 mt-1">
-              Catalog produse, stocuri și management categorii.
-            </p>
-          </div>
-          <button
-            onClick={handleOpenCreateModal}
-            // MODIFICAT: bg-emerald-600 și text-white pe light mode pentru un contrast premium adaptat
-            className="w-full sm:w-auto text-center bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white dark:text-zinc-950 font-black text-xs uppercase px-4 py-3 rounded-xl transition-all cursor-pointer shadow-md dark:shadow-lg dark:shadow-emerald-500/10 focus:outline-none focus:ring-2 focus:ring-emerald-500"
-          >
-            Adaugă Produs Nou
-          </button>
+    <div className="max-w-7xl mx-auto space-y-6 sm:space-y-10 px-4 sm:px-6 lg:px-8 py-6">
+      {/* Antet flexibil */}
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 border-b border-stone-200 dark:border-zinc-900 pb-6">
+        <div>
+          <h1 className="text-xl sm:text-2xl font-black text-stone-900 dark:text-white tracking-tight uppercase">
+            Dashboard Administrare
+          </h1>
+          <p className="text-xs sm:text-sm text-stone-600 dark:text-zinc-400 mt-1">
+            Catalog produse, stocuri și management categorii.
+          </p>
         </div>
+        <button
+          onClick={handleOpenCreateModal}
+          className="w-full sm:w-auto text-center bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white dark:text-zinc-950 font-black text-xs uppercase px-5 py-3 rounded-xl transition-all cursor-pointer shadow-md dark:shadow-lg dark:shadow-emerald-500/10 focus:outline-none focus:ring-2 focus:ring-emerald-500 focus:ring-offset-2 dark:focus:ring-offset-zinc-950"
+        >
+          Adaugă Produs Nou
+        </button>
+      </div>
 
+      {/* Secțiuni de conținut separate logic */}
+      <div className="space-y-6 sm:space-y-10">
         <CategoryManager
           categories={categories}
           onSaveCategory={handleSaveCategory}
@@ -198,16 +235,16 @@ function AdminProducts() {
           onDeleteProduct={handleDeleteProduct}
           onUpdateStock={handleUpdateStock}
         />
-
-        <ProductFormModal
-          isOpen={isModalOpen}
-          onClose={() => setIsModalOpen(false)}
-          editingProduct={editingProduct}
-          categories={categories}
-          onSubmit={handleFormSubmit}
-        />
       </div>
-    </main>
+
+      <ProductFormModal
+        isOpen={isModalOpen}
+        onClose={handleCloseModal}
+        editingProduct={editingProduct}
+        categories={categories}
+        onSubmit={handleFormSubmit}
+      />
+    </div>
   );
 }
 

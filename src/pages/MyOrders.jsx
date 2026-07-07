@@ -1,27 +1,32 @@
 import React, { useState, useEffect, useRef } from "react";
 import orderService from "../services/orderService";
-import OrderDetailsModal from "../components/OrderDetailsModal";
-
-// IMPORTĂ COMPONENTELE TALE EXISTENTE DIN PROIECT
-import OrderFilter from "../components/OrderFilter";
+import OrderDetailsModal from "../components/cart&orders/OrderDetailsModal";
+import OrderFilter from "../components/cart&orders/OrderFilter";
 import Pagination from "../components/Pagination";
+import { toast } from "sonner";
 
 const MyOrders = () => {
   const [orders, setOrders] = useState([]);
   const [loading, setLoading] = useState(true);
   const [actionLoadingId, setActionLoadingId] = useState(null);
 
-  // Stările pentru filtrare și paginare compatibile cu componentele tale
-  const [statusFilter, setStatusFilter] = useState("all");
+  const [selectedStatus, setSelectedStatus] = useState("all");
   const [currentPage, setCurrentPage] = useState(1);
-  const itemsPerPage = 5; // Schimbă numărul de comenzi pe pagină după preferință
+  const itemsPerPage = 5;
 
   const [selectedOrderDetails, setSelectedOrderDetails] = useState(null);
   const lastActiveButtonRef = useRef(null);
 
+  const isAnyModalOpen = !!selectedOrderDetails;
+
   useEffect(() => {
     fetchUserOrders();
   }, []);
+
+  // ─── UX OPTIMIZARE: Scroll automat sus la schimbarea paginii ───
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
 
   const fetchUserOrders = async () => {
     try {
@@ -30,6 +35,9 @@ const MyOrders = () => {
       setOrders(res.orders || []);
     } catch (error) {
       console.error("Eroare la încărcarea comenzilor:", error);
+      toast.error("Nu s-a putut încărca istoricul", {
+        description: "A apărut o eroare la preluarea comenzilor tale.",
+      });
     } finally {
       setLoading(false);
     }
@@ -40,11 +48,19 @@ const MyOrders = () => {
       try {
         setActionLoadingId(orderId);
         const res = await orderService.cancelOrder(orderId);
-        alert(res.message || "Comandă anulată cu succes!");
+
+        toast.success("Comandă anulată", {
+          description: res.message || "Comanda a fost anulată cu succes. 🛒",
+        });
+
         await fetchUserOrders();
       } catch (error) {
         console.error("Eroare la anularea comenzii:", error);
-        alert(error.response?.data?.message || "Nu s-a putut anula comanda.");
+        toast.error("Eroare la anulare", {
+          description:
+            error.response?.data?.message ||
+            "Nu s-a putut anula comanda în acest moment.",
+        });
       } finally {
         setActionLoadingId(null);
       }
@@ -63,24 +79,16 @@ const MyOrders = () => {
     }, 50);
   };
 
-  // --- LOGICA INTERNĂ DE FILTRARE ȘI PAGINARE ---
-
-  // 1. Filtrare
-  const filteredOrders = orders.filter((order) => {
-    if (statusFilter === "all") return true;
-    if (statusFilter === "pending") {
-      return order.status === "pending" || order.status === "panding";
-    }
-    return order.status === statusFilter;
-  });
-
-  // Schimbare filtru (resetează și pagina la 1)
-  const handleFilterChange = (filterId) => {
-    setStatusFilter(filterId);
+  const handleStatusFilterChange = (status) => {
+    setSelectedStatus(status);
     setCurrentPage(1);
   };
 
-  // 2. Calcul Paginare
+  const filteredOrders = orders.filter((order) => {
+    if (selectedStatus === "all") return true;
+    return order.status?.toLowerCase() === selectedStatus.toLowerCase();
+  });
+
   const totalPages = Math.ceil(filteredOrders.length / itemsPerPage) || 1;
   const indexOfLastItem = currentPage * itemsPerPage;
   const indexOfFirstItem = indexOfLastItem - itemsPerPage;
@@ -98,10 +106,11 @@ const MyOrders = () => {
   }
 
   return (
-    // CORECTAT: Container curat și transparent, fără clase de fundal care blochează scroll-ul sau strică designul uniform
-    <div className="py-12 px-4 sm:px-8 md:px-16">
-      <div className="max-w-4xl mx-auto">
-        {/* Aliniere Header + Filtru ca la structura de Admin */}
+    <div className="py-12 px-4 sm:px-8 md:px-16 max-w-7xl mx-auto">
+      <div
+        className="max-w-4xl mx-auto"
+        aria-hidden={isAnyModalOpen ? "true" : "false"}
+      >
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 mb-8">
           <div>
             <h1 className="text-3xl font-black tracking-tight text-stone-800 dark:text-zinc-100 uppercase">
@@ -112,17 +121,16 @@ const MyOrders = () => {
             </p>
           </div>
 
-          {/* COMPONENTA TA REUTILIZABILĂ DE FILTRARE */}
           <OrderFilter
-            activeFilter={statusFilter}
-            onFilterChange={handleFilterChange}
+            selectedStatus={selectedStatus}
+            onStatusFilterChange={handleStatusFilterChange}
           />
         </div>
 
         {filteredOrders.length === 0 ? (
           <div className="bg-white dark:bg-[#121212] border border-stone-200/60 dark:border-zinc-900 rounded-2xl p-12 text-center shadow-sm">
             <p className="text-stone-400 dark:text-zinc-500 text-sm italic">
-              {statusFilter === "all"
+              {selectedStatus === "all"
                 ? "Nu ai plasat nicio comandă până în acest moment."
                 : "Nu există comenzi cu statusul selectat."}
             </p>
@@ -133,7 +141,6 @@ const MyOrders = () => {
             role="region"
             aria-label="Istoricul comenzilor tale"
           >
-            {/* Randerăm doar bucata de comenzi (feliate prin slice) corespunzătoare paginii active */}
             {currentItems.map((order) => {
               const isPending =
                 order.status === "pending" || order.status === "panding";
@@ -191,12 +198,6 @@ const MyOrders = () => {
                             x{item.quantity}
                           </span>
                         </span>
-                        <span className="text-stone-700 dark:text-zinc-300 font-medium">
-                          {((item.product?.price || 0) * item.quantity).toFixed(
-                            2,
-                          )}{" "}
-                          RON
-                        </span>
                       </div>
                     ))}
                   </div>
@@ -206,13 +207,14 @@ const MyOrders = () => {
                     <p className="text-sm text-stone-500 dark:text-zinc-400">
                       Total de plată:{" "}
                       <span className="text-emerald-700 dark:text-emerald-500 font-black text-base">
-                        {order.totalAmount} RON
+                        {Number(order.totalAmount).toFixed(2)} RON
                       </span>
                     </p>
 
                     <div className="flex items-center gap-2 self-end sm:self-auto">
                       <button
                         type="button"
+                        tabIndex={isAnyModalOpen ? "-1" : "0"}
                         onClick={(e) => openDetailsModal(e, order)}
                         className="text-xs font-bold text-stone-700 dark:text-zinc-300 hover:text-stone-900 dark:hover:text-white border border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 bg-stone-50 dark:bg-zinc-900/50 px-4 py-2 rounded-xl transition-all uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-zinc-400 cursor-pointer"
                       >
@@ -222,6 +224,7 @@ const MyOrders = () => {
                       {isPending && (
                         <button
                           type="button"
+                          tabIndex={isAnyModalOpen ? "-1" : "0"}
                           disabled={isCancelling}
                           onClick={() => handleCancelOrder(order.id)}
                           className="text-xs font-bold text-rose-600 dark:text-red-400/90 hover:text-rose-700 dark:hover:text-red-400 border border-rose-200 dark:border-red-950 bg-rose-50 dark:bg-red-950/20 hover:bg-rose-100 dark:hover:bg-red-950/40 px-4 py-2 rounded-xl transition-all uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-rose-500 dark:focus:ring-red-500 disabled:opacity-40 cursor-pointer"
@@ -235,7 +238,7 @@ const MyOrders = () => {
               );
             })}
 
-            {/* COMPONENTA TA REUTILIZABILĂ DE PAGINARE */}
+            {/* COMPONENTA DE PAGINARE */}
             {totalPages > 1 && (
               <div className="pt-4">
                 <Pagination

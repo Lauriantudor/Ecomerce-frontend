@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from "react";
 import contactMessageService from "../services/contactMessageService";
 import { useAuth } from "../context/AuthContext";
+import { toast } from "sonner";
 
 function ContactForm() {
   const { user } = useAuth();
@@ -13,7 +14,6 @@ function ContactForm() {
   });
 
   const [loading, setLoading] = useState(false);
-  const [status, setStatus] = useState({ type: "", text: "" });
 
   useEffect(() => {
     if (user) {
@@ -39,14 +39,12 @@ function ContactForm() {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
-    setStatus({ type: "", text: "" });
 
     try {
       await contactMessageService.createMessage(formData);
 
-      setStatus({
-        type: "success",
-        text: "Mesajul tău a fost trimis cu succes! Te vom contacta în cel mai scurt timp. 🚀",
+      toast.success("Mesaj trimis cu succes!", {
+        description: "Te vom contacta în cel mai scurt timp posibil. 🚀",
       });
 
       setFormData((prev) => ({
@@ -57,9 +55,10 @@ function ContactForm() {
       }));
     } catch (error) {
       console.error("Eroare la trimiterea mesajului:", error);
-      setStatus({
-        type: "error",
-        text: "A apărut o problemă la trimiterea mesajului. Te rugăm să încerci din nou.",
+      toast.error("Eroare la trimitere", {
+        description:
+          error.response?.data?.message ||
+          "A apărut o problemă la trimiterea mesajului. Te rugăm să încerci din nou.",
       });
     } finally {
       setLoading(false);
@@ -67,7 +66,7 @@ function ContactForm() {
   };
 
   return (
-    <section className="min-h-screen  dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <section className="min-h-screen dark:bg-zinc-950 text-stone-900 dark:text-zinc-100 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
       <div className="max-w-xl w-full bg-white dark:bg-zinc-900 border border-stone-200/60 dark:border-zinc-800/80 rounded-3xl p-6 sm:p-10 shadow-sm dark:shadow-2xl space-y-6 transition-colors duration-300">
         <div className="text-center space-y-2">
           <h1 className="text-2xl sm:text-3xl font-black text-stone-900 dark:text-white tracking-tight uppercase">
@@ -78,18 +77,6 @@ function ContactForm() {
             feedback? Lasă-ne un mesaj mai jos!
           </p>
         </div>
-
-        {status.text && (
-          <div
-            className={`p-4 rounded-xl border text-xs sm:text-sm font-semibold transition-all ${
-              status.type === "success"
-                ? "bg-emerald-600/10 dark:bg-emerald-500/10 border-emerald-600/20 dark:border-emerald-500/30 text-emerald-800 dark:text-emerald-400"
-                : "bg-rose-600/10 dark:bg-rose-500/10 border-rose-600/20 dark:border-rose-500/30 text-rose-800 dark:text-rose-400"
-            }`}
-          >
-            {status.type === "success" ? "✓" : "⚠️"} {status.text}
-          </div>
-        )}
 
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Câmp: Nume Complet */}
@@ -182,7 +169,7 @@ function ContactForm() {
             />
           </div>
 
-          {/* Buton de trimitere - ACUM SINTAXA ESTE CORECTĂĂ */}
+          {/* Buton de trimitere */}
           <div className="pt-2">
             <button
               type="submit"

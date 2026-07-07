@@ -1,11 +1,9 @@
 import React, { useEffect, useState } from "react";
 import productService from "../services/productService";
 import categoryService from "../services/categoriesService";
-import ProductCard from "../components/ProductCard";
-import CategorySidebar from "../components/CategorySidebar";
-import SearchBar from "../components/SearchBar";
-
-// IMPORTĂM COMPONENTA DE PAGINARE PE CARE AM CREAT-O DEJA COMANA
+import ProductCard from "../components/products/ProductCard";
+import CategorySidebar from "../components/products/CategorySidebar";
+import SearchBar from "../components/products/SearchBar";
 import Pagination from "../components/Pagination";
 
 function Home() {
@@ -54,6 +52,11 @@ function Home() {
   useEffect(() => {
     fetchAllProducts(true);
   }, []);
+
+  // ─── UX OPTIMIZARE: Scroll automat sus la schimbarea paginii ───
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [currentPage]);
 
   const handleCategorySelection = async (catId) => {
     setSelectedCategory(catId);
@@ -116,7 +119,6 @@ function Home() {
   // Calculăm dinamic numărul total de pagini necesare
   const totalPages = Math.ceil(filteredProducts.length / productsPerPage);
 
-  // MODIFICAT: Ecranul de încărcare folosește text adaptiv și fundal transparent pentru a lăsa index.css să controleze culoarea
   if (loading && products.length === 0) {
     return (
       <div className="min-h-screen bg-transparent text-zinc-900 dark:text-white flex items-center justify-center font-medium">
@@ -126,9 +128,7 @@ function Home() {
   }
 
   return (
-    // MODIFICAT: Am scos bg-zinc-950 de aici și am pus text adaptiv (text-zinc-900 / dark:text-zinc-100)
-
-    <div className="max-w-7xl mx-auto">
+    <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
       <div className="flex flex-col md:flex-row gap-8">
         {/* Sidebar Categorii */}
         <CategorySidebar
@@ -146,7 +146,6 @@ function Home() {
 
           {/* Titlu Secțiune și Contor local curent */}
           <div className="mb-6 flex justify-between items-center px-1">
-            {/* MODIFICAT: Titlul text-zinc-900 pe light, text-white pe dark */}
             <h1 className="text-xl font-extrabold text-zinc-900 dark:text-white tracking-tight capitalize">
               {categoryNameDisplayed}
               {searchQuery && (
@@ -186,7 +185,7 @@ function Home() {
                 ))}
               </div>
 
-              {/* ─── UTILIZAREA COMPONENTEI GENERICE DE PAGINARE ─── */}
+              {/* Componenta Generică de Paginare */}
               <Pagination
                 currentPage={currentPage}
                 totalPages={totalPages}

@@ -50,12 +50,11 @@ const updateProduct = async (productId, formData) => {
   }
 };
 const addStock = async (productId, quantity) => {
-  console.log("In metoda de add stock");
   try {
     const response = await API.patch(`${baseURL}admin/addstock/${productId}`, {
       quantity: quantity,
     });
-    console.log(response);
+
     return response.data;
   } catch (error) {
     console.error("Eroare la adaugare de stock", error);

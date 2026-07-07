@@ -20,7 +20,7 @@ const login = async (email, password) => {
       email,
       password,
     });
-    console.log(login);
+
     return login;
   } catch (error) {
     throw error;
@@ -30,7 +30,7 @@ const login = async (email, password) => {
 const refresh = async () => {
   try {
     const refresh = await API.post(`${baseURL}/refresh`);
-    console.log("Refrshhhh");
+    console.log("Refrshhhh", refresh.data);
     return refresh.data;
   } catch (error) {
     throw error;

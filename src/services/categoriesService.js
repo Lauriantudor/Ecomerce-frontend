@@ -14,7 +14,7 @@ const getCategories = async () => {
 const getCategoryById = async (categoryId) => {
   try {
     const response = await API.get(`${baseURL}${categoryId}`);
-    console.log(response);
+
     return response.data;
   } catch (error) {
     console.error("Eroare la aducerea categoriei:", error);

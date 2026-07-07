@@ -14,7 +14,7 @@ const createMessage = async (fromData) => {
 const getAllMessages = async () => {
   try {
     const response = await API.get(`${baseURL}admin/get-messages`);
-    console.log(response);
+
     return response.data;
   } catch (error) {
     console.error("Eroare la citirea  mesajului", error);

@@ -1,6 +1,6 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { useAuth } from "../context/AuthContext";
+import { useAuth } from "../../context/AuthContext";
 
 const ProfileDropdown = () => {
   const { user, logout } = useAuth();
@@ -8,10 +8,8 @@ const ProfileDropdown = () => {
   const dropdownRef = useRef(null);
   const navigate = useNavigate();
 
-  // Verificăm dacă utilizatorul curent este administrator
   const isAdmin = user?.role === "admin";
 
-  // Închidem dropdown-ul dacă adminul/clientul dă click în afara lui
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -34,12 +32,11 @@ const ProfileDropdown = () => {
 
   return (
     <div className="relative" ref={dropdownRef}>
-      {/* Butonul Avatar / Profil */}
       <button
         onClick={() => setIsOpen(!isOpen)}
-        // MODIFICAT: Hover adaptiv (fundal stone deschis pe light mode)
-        className="p-2 text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors flex items-center justify-center focus:outline-none cursor-pointer rounded-xl hover:bg-stone-100 dark:hover:bg-zinc-900/50"
+        className="p-2 text-stone-500 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors flex items-center justify-center cursor-pointer rounded-xl hover:bg-stone-100 dark:hover:bg-zinc-900/50"
         aria-label="Meniu profil"
+        aria-expanded={isOpen}
       >
         <svg
           xmlns="http://www.w3.org/2000/svg"
@@ -57,38 +54,29 @@ const ProfileDropdown = () => {
         </svg>
       </button>
 
-      {/* Meniul Dropdown deschis */}
       {isOpen && (
-        // MODIFICAT: Fundal alb pur pe light mode și margini fine stone-200/60
         <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-[#121212] border border-stone-200/60 dark:border-zinc-900 rounded-2xl shadow-lg py-2 z-50 animate-fade-in text-sm font-medium transition-colors duration-300">
-          {/* Email/Info utilizator logat */}
-          {/* MODIFICAT: Border discret și text stone optimizat pe light mode */}
-          <div className="px-4 py-2 border-b border-stone-100 dark:border-zinc-900/80 text-xs text-stone-400 dark:text-zinc-500 truncate font-mono">
+          <div className="px-4 py-2 border-b border-stone-100 dark:border-zinc-900/80 text-xs text-stone-600 dark:text-zinc-400 truncate font-mono">
             {user?.email}
             {isAdmin && (
-              // MODIFICAT: Verde smarald închis (emerald-700) pentru lizibilitate crescută pe alb
               <span className="block text-emerald-700 dark:text-emerald-400 font-bold mt-0.5 uppercase tracking-wider text-[10px]">
                 Admin Account
               </span>
             )}
           </div>
 
-          {/* AFIȘARE CONDIȚIONATĂ: Link-ul apare doar dacă NU este admin */}
           {!isAdmin && (
             <Link
               to="/comenzile-mele"
               onClick={() => setIsOpen(false)}
-              // MODIFICAT: Culori adaptate pentru text și fundal hover pe modul deschis
               className="block px-4 py-2.5 text-stone-600 dark:text-zinc-300 hover:text-stone-900 dark:hover:text-white hover:bg-stone-50 dark:hover:bg-zinc-900/40 transition-colors"
             >
               Comenzile Mele
             </Link>
           )}
 
-          {/* Butonul de Logout (valabil pentru toți) */}
           <button
             onClick={handleLogout}
-            // MODIFICAT: Rose profund (rose-600) și efect hover soft pe light mode
             className="w-full text-left px-4 py-2.5 text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 hover:bg-rose-50 dark:hover:bg-rose-500/5 transition-colors border-t border-stone-100 dark:border-zinc-900/50 mt-1 cursor-pointer font-bold"
           >
             Deconectare

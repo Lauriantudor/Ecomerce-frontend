@@ -1,7 +1,7 @@
 import API from "./api";
 
 const baseURL = "/orders/";
-const createOder = async (addressId) => {
+const createOrder = async (addressId) => {
   const response = await API.post(baseURL, {
     addressId: Number(addressId),
   });
@@ -26,7 +26,7 @@ const changeStatus = async (orderId, status) => {
   });
 };
 const orderService = {
-  createOder,
+  createOrder,
   getUserOrder,
   cancelOrder,
   getAllOrders,

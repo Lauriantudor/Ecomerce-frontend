@@ -5,16 +5,27 @@
 html,
 body,
 #root {
-  min-height: 100dvh; /* CORECTAT: 100dvh pentru a preveni problemele pe mobil */
+  min-height: 100dvh;
   margin: 0;
   padding: 0;
-  /* CORECTAT: Înlocuit bg-zinc-50 cu bg-stone-50 (vanilie) și text-stone-800 pentru un contrast cald */
-  @apply bg-[#faf8f0] dark:bg-zinc-950 text-stone-800 dark:text-zinc-800 transition-colors duration-300;
+  @apply bg-[#faf8f0] dark:bg-zinc-950 text-stone-800 dark:text-zinc-100 transition-colors duration-300;
 }
 
-/* Când clasa .dark este activată, trecem pe tema carbon/zinc închis */
 html.dark body {
   @apply bg-zinc-950 text-zinc-100;
+}
+
+@utility focus-visible {
+  outline: none !important;
+  box-shadow:
+    0 0 0 2px var(--color-white),
+    0 0 0 4px var(--color-emerald-500) !important;
+}
+
+.dark *:focus-visible {
+  box-shadow:
+    0 0 0 2px var(--color-zinc-950),
+    0 0 0 4px var(--color-emerald-400) !important;
 }
 
 @source "./**/*.{js,jsx,ts,tsx}";

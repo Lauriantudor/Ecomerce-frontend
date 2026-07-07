@@ -24,8 +24,12 @@ function ThemeToggle() {
   return (
     <button
       onClick={() => setIsDarkMode(!isDarkMode)}
-      className="p-2 rounded-xl text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-stone-400 dark:focus-visible:ring-zinc-500 cursor-pointer"
+      aria-pressed={isDarkMode}
+      aria-label={
+        isDarkMode ? "Activează modul luminos" : "Activează modul întunecat"
+      }
       title={isDarkMode ? "Schimbă pe Light Mode" : "Schimbă pe Dark Mode"}
+      className="p-2 rounded-xl text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white hover:bg-stone-100 dark:hover:bg-zinc-900 transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 cursor-pointer"
     >
       {isDarkMode ? (
         // Iconiță de Soare (pentru Light Mode)
@@ -35,6 +39,7 @@ function ThemeToggle() {
           viewBox="0 0 24 24"
           stroke="currentColor"
           strokeWidth="2.5"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"
@@ -45,11 +50,12 @@ function ThemeToggle() {
       ) : (
         // Iconiță de Lună (pentru Dark Mode)
         <svg
-          className="h-5 w-5 text-zinc-700"
+          className="h-5 w-5 text-stone-700"
           fill="none"
           viewBox="0 0 24 24"
           stroke="currentColor"
           strokeWidth="2.5"
+          aria-hidden="true"
         >
           <path
             strokeLinecap="round"

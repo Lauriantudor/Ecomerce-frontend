@@ -4,7 +4,7 @@ const baseURL = "/cart/";
 
 const getCart = async () => {
   const response = await API.get(baseURL);
-  console.log(response);
+
   return response.data;
 };
 
