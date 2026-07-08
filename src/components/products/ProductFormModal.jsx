@@ -5,7 +5,7 @@ function ProductFormModal({
   isOpen,
   onClose,
   editingProduct,
-  categories,
+  categories = [], // Default value pentru siguranță
   onSubmit,
 }) {
   const [formData, setFormData] = useState({
@@ -35,7 +35,8 @@ function ProductFormModal({
           description: editingProduct.description || "",
           price: editingProduct.price || "",
           stock: editingProduct.stock || "",
-          categoryId: editingProduct.categoryId || categories[0]?.id || "",
+          // Dacă produsul are deja categorie o păstrăm, altfel lăsăm gol pentru selectare manuală
+          categoryId: editingProduct.categoryId || "",
           altImage: editingProduct.altImage || "",
           image: null,
         });
@@ -47,7 +48,7 @@ function ProductFormModal({
           description: "",
           price: "",
           stock: "",
-          categoryId: categories[0]?.id || "",
+          categoryId: "", // 🌟 String gol implicit pentru a activa placeholder-ul la adăugare
           altImage: "",
           image: null,
         });
@@ -86,7 +87,7 @@ function ProductFormModal({
         document.getElementById("root") || document.querySelector("main");
       if (mainContent) mainContent.removeAttribute("aria-hidden");
     };
-  }, [isOpen, editingProduct, categories]);
+  }, [isOpen, editingProduct]); // Am scos categories de aici pentru a evita resetări inutile în timpul editării
 
   const handleKeyDown = (e) => {
     if (e.key === "Escape") {
@@ -165,6 +166,7 @@ function ProductFormModal({
         {/* Buton Închidere */}
         <button
           onClick={onClose}
+          type="button"
           aria-label="Închide modalul"
           className="absolute top-4 right-4 text-stone-500 hover:text-stone-800 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer text-sm font-bold focus:outline-none focus:ring-2 focus:ring-stone-400 rounded-full p-1"
         >
@@ -249,19 +251,31 @@ function ProductFormModal({
             </label>
             <select
               name="categoryId"
+              required
               value={isNewCategory ? "NEW_CATEGORY" : formData.categoryId}
               onChange={handleCategoryChange}
               className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl p-3 text-sm text-emerald-800 dark:text-emerald-400 font-bold focus:outline-none focus:border-stone-400 dark:focus:border-zinc-700 focus:ring-2 focus:ring-stone-200 dark:focus:ring-zinc-800 shadow-sm dark:shadow-none"
             >
-              {categories.map((cat) => (
-                <option
-                  key={cat.id}
-                  value={cat.id}
-                  className="text-stone-900 dark:text-white bg-white dark:bg-zinc-950"
-                >
-                  {cat.name}
-                </option>
-              ))}
+              {/* 🌟 Rezolvare: Opțiunea implicită dezactivată obligă o schimbare reală de onChange */}
+              <option
+                value=""
+                disabled
+                className="text-stone-400 dark:text-zinc-600 bg-white dark:bg-zinc-950"
+              >
+                -- Selectează o categorie --
+              </option>
+
+              {categories &&
+                categories.map((cat) => (
+                  <option
+                    key={cat.id}
+                    value={cat.id}
+                    className="text-stone-900 dark:text-white bg-white dark:bg-zinc-950"
+                  >
+                    {cat.name}
+                  </option>
+                ))}
+
               <option
                 value="NEW_CATEGORY"
                 className="text-emerald-700 dark:text-emerald-400 font-bold bg-white dark:bg-zinc-950"

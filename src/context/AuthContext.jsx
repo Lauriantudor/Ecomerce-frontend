@@ -8,6 +8,8 @@ const AuthContext = createContext();
 export const AuthProvider = ({ children }) => {
   const [user, setUser] = useState(null);
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  // Adăugăm o stare de loading dacă ai nevoie în App.js (opțional, dar bun pentru rutele de admin)
+  const [loading, setLoading] = useState(true);
 
   // La pornirea aplicației, verificăm dacă avem deja un utilizator salvat
   useEffect(() => {
@@ -21,7 +23,25 @@ export const AuthProvider = ({ children }) => {
         localStorage.removeItem("token");
       }
     }
+    setLoading(false); // Am terminat verificarea inițială
   }, []);
+
+  // --- LOGICĂ ÎNREGISTRARE (ADĂUGATĂ ACUM) ---
+  const register = async (username, email, password) => {
+    try {
+      console.log("Se încearcă înregistrarea prin authService pentru:", email);
+      const res = await authService.register(username, email, password);
+
+      if (res) {
+        console.log("Înregistrare reușită în AuthContext:", res);
+        return res; // Trimitem răspunsul mai departe către formular
+      }
+      return null;
+    } catch (error) {
+      console.error("Eroare în AuthContext register:", error);
+      throw error; // Aruncăm eroarea mai departe pentru ca componenta RegisterForm să o prindă în catch
+    }
+  };
 
   const login = async (email, password) => {
     try {
@@ -36,7 +56,7 @@ export const AuthProvider = ({ children }) => {
       if (res) {
         console.log("Răspuns primit de la serviciu:", res);
 
-        // 1. Extragere Token (Aici era deja ok la tine, dar asigurăm toate căile)
+        // 1. Extragere Token
         const token = res.accessToken || res.data?.accessToken;
 
         if (token) {
@@ -46,7 +66,7 @@ export const AuthProvider = ({ children }) => {
           console.warn("Nu s-a găsit accessToken în structura răspunsului.");
         }
 
-        // 2. Extragere User (CORECTAT: Adăugată verificarea pentru res.data?.data?.user)
+        // 2. Extragere User
         const userData = res.user || res.data?.user || res.data?.data?.user;
 
         if (userData) {
@@ -60,7 +80,6 @@ export const AuthProvider = ({ children }) => {
           console.warn(
             "Nu s-a putut extrage user-ul din structura DB. Se aplică fallback.",
           );
-          // Fallback în caz că structura e plată sau goală
           const fallbackUser = {
             id: res.id || res.data?.id,
             email,
@@ -93,7 +112,7 @@ export const AuthProvider = ({ children }) => {
       window.location.reload();
       return true;
     } catch (error) {
-      console.error("Eroare în AuthContext login:", error);
+      console.error("Eroare în AuthContext logout:", error);
       return false;
     }
   };
@@ -105,8 +124,10 @@ export const AuthProvider = ({ children }) => {
     <AuthContext.Provider
       value={{
         user,
+        loading, // Expus pentru a preveni "flicăreala" la AdminRoute din App.js
         isAuthModalOpen,
         login,
+        register, // EXPUSE ACUM: metoda de înregistrare
         logout,
         openAuthModal,
         closeAuthModal,

@@ -1,344 +1,243 @@
-import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
+import React, { useState } from "react";
+import QuantitySelector from "../QuantitySelector";
 
-function ProductFormModal({
-  isOpen,
-  onClose,
-  editingProduct,
-  categories,
-  onSubmit,
+function ProductTable({
+  products,
+  onEditProduct,
+  onDeleteProduct,
+  onUpdateStock,
 }) {
-  const [formData, setFormData] = useState({
-    name: "",
-    description: "",
-    price: "",
-    stock: "",
-    categoryId: "",
-    altImage: "",
-    image: null,
-  });
+  const [stockQuantities, setStockQuantities] = useState({});
 
-  const [isNewCategory, setIsNewCategory] = useState(false);
-  const [newCategoryName, setNewCategoryName] = useState("");
-
-  const modalRef = useRef(null);
-  const previousFocusRef = useRef(null);
-
-  useEffect(() => {
-    if (isOpen) {
-      document.body.style.overflow = "hidden";
-      previousFocusRef.current = document.activeElement;
-
-      if (editingProduct) {
-        setFormData({
-          name: editingProduct.name || "",
-          description: editingProduct.description || "",
-          price: editingProduct.price || "",
-          stock: editingProduct.stock || "",
-          categoryId: editingProduct.categoryId || categories[0]?.id || "",
-          altImage: editingProduct.altImage || "",
-          image: null,
-        });
-        setIsNewCategory(false);
-        setNewCategoryName("");
-      } else {
-        setFormData({
-          name: "",
-          description: "",
-          price: "",
-          stock: "",
-          categoryId: categories[0]?.id || "",
-          altImage: "",
-          image: null,
-        });
-        setIsNewCategory(false);
-        setNewCategoryName("");
-      }
-
-      const mainContent =
-        document.getElementById("root") || document.querySelector("main");
-      if (mainContent) {
-        mainContent.setAttribute("aria-hidden", "true");
-      }
-
-      setTimeout(() => {
-        if (modalRef.current) {
-          modalRef.current.focus();
-        }
-      }, 50);
-    } else {
-      document.body.style.overflow = "unset";
-
-      const mainContent =
-        document.getElementById("root") || document.querySelector("main");
-      if (mainContent) {
-        mainContent.removeAttribute("aria-hidden");
-      }
-
-      if (previousFocusRef.current) {
-        previousFocusRef.current.focus();
-      }
-    }
-
-    return () => {
-      document.body.style.overflow = "unset";
-      const mainContent =
-        document.getElementById("root") || document.querySelector("main");
-      if (mainContent) mainContent.removeAttribute("aria-hidden");
-    };
-  }, [isOpen, editingProduct, categories]);
-
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") {
-      onClose();
-      return;
-    }
-
-    if (e.key !== "Tab") return;
-
-    if (modalRef.current) {
-      const focusableElements = modalRef.current.querySelectorAll(
-        'button, [href], input, select, textarea, [tabindex]:not([tabindex="-1"])',
-      );
-      const firstElement = focusableElements[0];
-      const lastElement = focusableElements[focusableElements.length - 1];
-
-      if (e.shiftKey) {
-        if (document.activeElement === firstElement) {
-          lastElement.focus();
-          e.preventDefault();
-        }
-      } else {
-        if (document.activeElement === lastElement) {
-          firstElement.focus();
-          e.preventDefault();
-        }
-      }
-    }
+  const handleInputChange = (productId, value) => {
+    const safeValue = value !== undefined && value !== null ? value : "";
+    const cleanValue = safeValue.toString().replace(/[^0-9]/g, "");
+    setStockQuantities((prev) => ({ ...prev, [productId]: cleanValue }));
   };
 
-  if (!isOpen) return null;
+  const handleAlimentareClick = async (productId) => {
+    const rawValue = stockQuantities[productId];
+    const qty =
+      rawValue === "" || rawValue === undefined ? 1 : parseInt(rawValue, 10);
 
-  const handleInputChange = (e) => {
-    const { name, value } = e.target;
-    setFormData((prev) => ({ ...prev, [name]: value }));
+    if (isNaN(qty) || qty <= 0) return alert("Introdu o cantitate validă.");
+
+    await onUpdateStock(productId, qty);
+    setStockQuantities((prev) => ({ ...prev, [productId]: "" }));
   };
 
-  const handleCategoryChange = (e) => {
-    const value = e.target.value;
-    if (value === "NEW_CATEGORY") {
-      setIsNewCategory(true);
-      setFormData((prev) => ({ ...prev, categoryId: "" }));
-    } else {
-      setIsNewCategory(false);
-      setFormData((prev) => ({ ...prev, categoryId: value }));
-    }
-  };
+  return (
+    <div className="space-y-4">
+      {/* ─── MOD VIZUALIZARE DESKTOP: TABEL ADAPTIV ─── */}
+      <div className="hidden md:block bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-xl transition-colors duration-300">
+        <div className="p-4 border-b border-stone-200 dark:border-zinc-800 bg-stone-50/70 dark:bg-zinc-900/50">
+          <h2 className="text-sm font-black uppercase tracking-wider text-stone-700 dark:text-zinc-300">
+            Catalog Produse
+          </h2>
+        </div>
+        <table className="w-full text-left border-collapse">
+          <thead>
+            <tr className="border-b border-stone-200 dark:border-zinc-800 text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider bg-stone-100/40 dark:bg-zinc-900/30">
+              <th className="p-4">Produs</th>
+              <th className="p-4">Categorie</th>
+              <th className="p-4">Preț</th>
+              <th className="p-4">Stoc Actual</th>
+              <th className="p-4">Alimentare Rapidă Stoc</th>
+              <th className="p-4 text-right">Acțiuni</th>
+            </tr>
+          </thead>
+          <tbody className="divide-y divide-stone-200 dark:divide-zinc-800/60 text-sm">
+            {products.map((product) => (
+              <tr
+                key={product.id}
+                className="hover:bg-stone-50 dark:hover:bg-zinc-800/20 transition-colors"
+              >
+                <td className="p-4 flex items-center gap-3">
+                  <img
+                    src={
+                      product.imageUrl
+                        ? `http://localhost:3000${product.imageUrl}`
+                        : "/placeholder.png"
+                    }
+                    alt=""
+                    aria-hidden="true"
+                    className="w-12 h-12 object-cover object-[80%_center] rounded-xl bg-stone-100 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-850 shrink-0 shadow-inner"
+                  />
+                  <div>
+                    <span className="block font-bold text-stone-900 dark:text-white capitalize">
+                      {product.name}
+                    </span>
+                    <p className="text-xs text-stone-600 dark:text-zinc-400 font-medium line-clamp-1 max-w-[180px] mt-1">
+                      {product.description || "Fără descriere"}
+                    </p>
+                  </div>
+                </td>
+                <td className="p-4 text-stone-600 dark:text-zinc-400 capitalize whitespace-nowrap">
+                  {product.category?.name || "Nespecificată"}
+                </td>
+                <td className="p-4 font-black text-emerald-700 dark:text-emerald-400 whitespace-nowrap">
+                  {product.price} RON
+                </td>
+                <td className="p-4 whitespace-nowrap">
+                  <span
+                    className={`px-2.5 py-1 rounded-md text-xs font-bold ${
+                      product.stock > 0
+                        ? "bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300"
+                        : "bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400 border border-rose-200 dark:border-rose-500/20"
+                    }`}
+                  >
+                    {product.stock} buc
+                  </span>
+                </td>
+                <td className="p-4">
+                  <div className="flex items-center gap-3">
+                    <QuantitySelector
+                      product={product}
+                      value={stockQuantities[product.id] ?? ""}
+                      onInputChange={handleInputChange}
+                    />
+                    <button
+                      onClick={() => handleAlimentareClick(product.id)}
+                      aria-label={`Alimentează stoc pentru ${product.name}`}
+                      className="bg-stone-200 hover:bg-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-300 font-bold text-xs px-3 py-2 rounded-xl transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-400"
+                    >
+                      Alimentează
+                    </button>
+                  </div>
+                </td>
 
-  const handleFileChange = (e) => {
-    setFormData((prev) => ({ ...prev, image: e.target.files[0] }));
-  };
+                {/* 🛠️ REPARAȚIE DESKTOP: Grupăm semantic acțiunile în celulă pentru a forța NVDA să le izoleze */}
+                <td className="p-4 text-right whitespace-nowrap">
+                  <div
+                    role="group"
+                    aria-label={`Acțiuni pentru ${product.name}`}
+                    className="inline-flex gap-2"
+                  >
+                    <button
+                      onClick={() => onEditProduct(product)}
+                      aria-label={`Editează ${product.name}`}
+                      className="text-xs font-bold text-stone-500 hover:text-stone-800 dark:text-zinc-400 dark:hover:text-white px-3 py-1.5 rounded-lg hover:bg-stone-100 dark:hover:bg-zinc-800 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-400"
+                    >
+                      Editează
+                    </button>
+                    <button
+                      onClick={() => onDeleteProduct(product.id)}
+                      aria-label={`Șterge ${product.name}`}
+                      className="text-xs font-bold text-rose-600 dark:text-rose-400 hover:text-rose-700 dark:hover:text-rose-300 px-3 py-1.5 rounded-lg hover:bg-rose-50 dark:hover:bg-rose-500/10 transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-rose-500"
+                    >
+                      Șterge
+                    </button>
+                  </div>
+                </td>
+              </tr>
+            ))}
+          </tbody>
+        </table>
+      </div>
 
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    onSubmit({
-      ...formData,
-      isNewCategory,
-      newCategoryName: isNewCategory ? newCategoryName.trim() : "",
-    });
-  };
-
-  return createPortal(
-    <div
-      className="fixed inset-0 z-[9999] flex items-center justify-center p-4 bg-black/60 dark:bg-black/70 backdrop-blur-sm animate-fade-in"
-      onClick={(e) => e.target === e.currentTarget && onClose()}
-    >
-      <div
-        ref={modalRef}
-        role="dialog"
-        aria-modal="true"
-        aria-labelledby="modal-title"
-        tabIndex="-1"
-        onKeyDown={handleKeyDown}
-        className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-3xl w-full max-w-xl p-6 shadow-2xl relative max-h-[90vh] overflow-y-auto transition-colors duration-300 focus:outline-none"
-      >
-        {/* Buton Închidere */}
-        <button
-          onClick={onClose}
-          aria-label="Închide modalul"
-          className="absolute top-4 right-4 text-stone-500 hover:text-stone-800 dark:text-zinc-400 dark:hover:text-white transition-colors cursor-pointer text-sm font-bold focus:outline-none focus:ring-2 focus:ring-stone-400 rounded-full p-1"
-        >
-          ✕
-        </button>
-
-        <h2
-          id="modal-title"
-          className="text-lg font-black uppercase text-stone-900 dark:text-white tracking-tight mb-4"
-        >
-          {editingProduct
-            ? `Editează Produsul #${editingProduct.id}`
-            : "Adaugă un Produs Nou"}
+      {/* ─── MOD VIZUALIZARE MOBIL: LISTĂ DE CARDURI COMPACTE ─── */}
+      <div className="block md:hidden space-y-4">
+        <h2 className="text-xs font-black uppercase tracking-wider text-stone-600 dark:text-zinc-400 px-1">
+          Catalog Produse ({products.length})
         </h2>
 
-        <form onSubmit={handleSubmit} className="space-y-4">
-          {/* Nume Produs */}
-          <div>
-            <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase mb-1.5">
-              Nume Produs *
-            </label>
-            <input
-              type="text"
-              name="name"
-              required
-              value={formData.name}
-              onChange={handleInputChange}
-              className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl p-3 text-sm text-stone-900 dark:text-white focus:outline-none focus:border-stone-400 dark:focus:border-zinc-700 focus:ring-2 focus:ring-stone-200 dark:focus:ring-zinc-800 shadow-sm dark:shadow-none"
-            />
-          </div>
-
-          {/* Descriere */}
-          <div>
-            <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase mb-1.5">
-              Descriere
-            </label>
-            <textarea
-              name="description"
-              rows="3"
-              value={formData.description}
-              onChange={handleInputChange}
-              className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl p-3 text-sm text-stone-910 dark:text-white focus:outline-none focus:border-stone-400 dark:focus:border-zinc-700 focus:ring-2 focus:ring-stone-200 dark:focus:ring-zinc-800 resize-none shadow-sm dark:shadow-none"
-            ></textarea>
-          </div>
-
-          {/* Preț și Stoc */}
-          <div className="grid grid-cols-2 gap-4">
-            <div>
-              <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase mb-1.5">
-                Preț (RON) *
-              </label>
-              <input
-                type="number"
-                step="0.01"
-                name="price"
-                required
-                value={formData.price}
-                onChange={handleInputChange}
-                className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl p-3 text-sm text-stone-900 dark:text-white focus:outline-none focus:border-stone-400 dark:focus:border-zinc-700 focus:ring-2 focus:ring-stone-200 dark:focus:ring-zinc-800 shadow-sm dark:shadow-none"
-              />
-            </div>
-            <div>
-              <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase mb-1.5">
-                Stoc Inițial *
-              </label>
-              <input
-                type="number"
-                name="stock"
-                required
-                disabled={!!editingProduct}
-                value={formData.stock}
-                onChange={handleInputChange}
-                className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl p-3 text-sm text-stone-900 dark:text-white focus:outline-none focus:border-stone-400 dark:focus:border-zinc-700 disabled:opacity-40 dark:disabled:opacity-50 shadow-sm dark:shadow-none"
-              />
-            </div>
-          </div>
-
-          {/* Categorie */}
-          <div>
-            <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase mb-1.5">
-              Categorie *
-            </label>
-            <select
-              name="categoryId"
-              value={isNewCategory ? "NEW_CATEGORY" : formData.categoryId}
-              onChange={handleCategoryChange}
-              className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl p-3 text-sm text-emerald-800 dark:text-emerald-400 font-bold focus:outline-none focus:border-stone-400 dark:focus:border-zinc-700 focus:ring-2 focus:ring-stone-200 dark:focus:ring-zinc-800 shadow-sm dark:shadow-none"
+        <ul className="space-y-4" role="list">
+          {products.map((product) => (
+            <li
+              key={product.id}
+              className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-lg transition-colors duration-300"
             >
-              {categories.map((cat) => (
-                <option
-                  key={cat.id}
-                  value={cat.id}
-                  className="text-stone-900 dark:text-white bg-white dark:bg-zinc-950"
+              <div className="flex items-start gap-3">
+                <img
+                  src={
+                    product.imageUrl
+                      ? `http://localhost:3000${product.imageUrl}`
+                      : "/placeholder.png"
+                  }
+                  alt=""
+                  aria-hidden="true"
+                  className="w-12 h-12 object-cover rounded-xl bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 shrink-0"
+                />
+                <div className="min-w-0 flex-1">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="font-bold text-stone-900 dark:text-white text-base capitalize truncate">
+                      {product.name}
+                    </h3>
+                    <span className="text-xs font-black text-emerald-700 dark:text-emerald-400 shrink-0">
+                      {product.price} RON
+                    </span>
+                  </div>
+                  <p className="text-xs text-stone-600 dark:text-zinc-400 font-medium line-clamp-2 mt-1">
+                    {product.description || "Fără descriere"}
+                  </p>
+                  <div className="flex gap-2 mt-2">
+                    <span className="bg-stone-50 dark:bg-zinc-950 text-stone-600 dark:text-zinc-400 text-[10px] uppercase tracking-wider font-bold px-2 py-0.5 rounded-md border border-stone-200 dark:border-zinc-800">
+                      {product.category?.name || "Nespecificată"}
+                    </span>
+                    <span
+                      className={`text-[10px] font-bold px-2 py-0.5 rounded-md ${
+                        product.stock > 0
+                          ? "bg-stone-100 dark:bg-zinc-800 text-stone-700 dark:text-zinc-300"
+                          : "bg-rose-100 dark:bg-rose-500/10 text-rose-700 dark:text-rose-400"
+                      }`}
+                    >
+                      Stoc: {product.stock} buc
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              {/* Secțiune Alimentare Rapidă Stoc Mobil */}
+              <div className="bg-stone-50/60 dark:bg-zinc-950/60 p-2.5 rounded-xl border border-stone-200 dark:border-zinc-800/60 flex items-center justify-between gap-2">
+                <span className="text-xs text-stone-600 dark:text-zinc-400 font-medium">
+                  Adaugă stoc:
+                </span>
+                <div className="flex items-center gap-2">
+                  <QuantitySelector
+                    product={product}
+                    value={stockQuantities[product.id] ?? ""}
+                    onInputChange={handleInputChange}
+                  />
+                  <button
+                    onClick={() => handleAlimentareClick(product.id)}
+                    className="bg-stone-200 hover:bg-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-700 dark:text-zinc-200 font-bold text-xs px-2.5 py-2 rounded-lg cursor-pointer transition-all focus:outline-none"
+                    aria-label={`Alimentează stoc pentru ${product.name}`}
+                  >
+                    +
+                  </button>
+                </div>
+              </div>
+
+              {/* Butoane Acțiuni Mobil */}
+              <div className="pt-1 border-t border-stone-200 dark:border-zinc-800/50">
+                <div
+                  role="group"
+                  aria-label={`Opțiuni manager pentru ${product.name}`}
+                  className="grid grid-cols-2 pt-2 border-t border-stone-200 dark:border-zinc-850"
                 >
-                  {cat.name}
-                </option>
-              ))}
-              <option
-                value="NEW_CATEGORY"
-                className="text-emerald-700 dark:text-emerald-400 font-bold bg-white dark:bg-zinc-950"
-              >
-                + Adaugă categorie nouă...
-              </option>
-            </select>
-          </div>
+                  <button
+                    onClick={() => onEditProduct(product)}
+                    aria-label={`Editează produsul ${product.name}`}
+                    className="text-xs font-bold text-stone-700 dark:text-zinc-300 bg-transparent hover:bg-stone-50 dark:hover:bg-zinc-800/40 py-2.5 rounded-l-xl text-center cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-zinc-600 border-r border-stone-200 dark:border-zinc-800"
+                  >
+                    Editează
+                  </button>
 
-          {/* Câmp dinamic Categorie Nouă */}
-          {isNewCategory && (
-            <div className="bg-stone-100/50 dark:bg-zinc-950/50 p-4 border border-dashed border-stone-300 dark:border-zinc-800 rounded-xl animate-fade-in space-y-2">
-              <label className="block text-xs font-bold text-emerald-800 dark:text-emerald-400 uppercase">
-                Nume Categorie Nouă *
-              </label>
-              <input
-                type="text"
-                required
-                placeholder="Ex: Încălțăminte, Accesorii"
-                value={newCategoryName}
-                onChange={(e) => setNewCategoryName(e.target.value)}
-                className="w-full bg-white dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl p-3 text-sm text-stone-900 dark:text-white focus:outline-none focus:border-emerald-600 focus:ring-2 focus:ring-emerald-100 dark:focus:ring-emerald-950"
-              />
-            </div>
-          )}
-
-          {/* Imagine Produs */}
-          <div className="border-t border-stone-200 dark:border-zinc-800 pt-3">
-            <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase mb-1.5">
-              Imagine Produs {editingProduct ? "(Opțional)" : "*"}
-            </label>
-            <input
-              type="file"
-              accept="image/*"
-              required={!editingProduct}
-              onChange={handleFileChange}
-              className="w-full text-xs text-stone-500 dark:text-zinc-400 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:text-xs file:font-black file:uppercase file:bg-stone-200 dark:file:bg-zinc-800 file:text-stone-800 dark:file:text-zinc-200 hover:file:bg-stone-300 dark:hover:file:bg-zinc-700 cursor-pointer transition-all focus:outline-none"
-            />
-          </div>
-
-          {/* Alt Text */}
-          <div>
-            <label className="block text-xs font-bold text-stone-700 dark:text-zinc-300 uppercase mb-1.5">
-              Descriere Alternativă Imagine (Alt Text) *
-            </label>
-            <input
-              type="text"
-              name="altImage"
-              required={!editingProduct || !!formData.image}
-              placeholder="Ex: Hanorac negru streetwear, detalii brodate"
-              value={formData.altImage}
-              onChange={handleInputChange}
-              className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200 dark:border-zinc-800 rounded-xl p-3 text-sm text-stone-900 dark:text-white placeholder-stone-500 dark:placeholder-zinc-500 focus:outline-none focus:border-stone-400 dark:focus:border-zinc-700 focus:ring-2 focus:ring-stone-200 dark:focus:ring-zinc-800 shadow-sm dark:shadow-none"
-            />
-          </div>
-
-          {/* Acțiuni Formular */}
-          <div className="flex justify-end gap-3 pt-2">
-            <button
-              type="button"
-              onClick={onClose}
-              className="bg-stone-200 hover:bg-stone-300 dark:bg-zinc-800 dark:hover:bg-zinc-700 text-stone-900 dark:text-zinc-100 text-xs font-bold uppercase px-4 py-3 rounded-xl transition-all cursor-pointer focus:outline-none focus:ring-2 focus:ring-stone-400"
-            >
-              Anulează
-            </button>
-            <button
-              type="submit"
-              className="bg-emerald-600 dark:bg-emerald-500 hover:bg-emerald-700 dark:hover:bg-emerald-600 text-white dark:text-zinc-950 text-xs font-black uppercase px-4 py-3 rounded-xl transition-all cursor-pointer shadow-sm focus:outline-none focus:ring-2 focus:ring-emerald-500 dark:focus:ring-emerald-400"
-            >
-              {editingProduct ? "Salvează Modificările" : "Creează Produs"}
-            </button>
-          </div>
-        </form>
+                  <button
+                    onClick={() => onDeleteProduct(product.id)}
+                    aria-label={`Șterge produsul ${product.name}`}
+                    className="text-xs font-bold text-rose-700 dark:text-rose-400 bg-transparent hover:bg-rose-50/50 dark:hover:bg-rose-500/5 py-2.5 rounded-r-xl text-center cursor-pointer transition-all focus:outline-none focus:ring-2 focus:ring-rose-500"
+                  >
+                    Șterge
+                  </button>
+                </div>
+              </div>
+            </li>
+          ))}
+        </ul>
       </div>
-    </div>,
-    document.body,
+    </div>
   );
 }
 
-export default ProductFormModal;
+export default ProductTable;

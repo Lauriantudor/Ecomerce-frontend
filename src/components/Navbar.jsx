@@ -12,17 +12,13 @@ const Navbar = () => {
 
   const isAdmin = user?.role === "admin";
 
-  // Stil comun pentru focus, aplicat uniform pe link-uri pentru a evita duplicarea codului
   const focusRing =
     "focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 focus-visible:ring-offset-2 dark:focus-visible:ring-offset-[#121212] rounded-lg";
 
   return (
     <>
-      {/* CONTAINER ADAPTIV */}
       <nav className="bg-white dark:bg-[#121212] border-b border-stone-200 dark:border-zinc-900 text-stone-900 dark:text-white px-4 sm:px-6 py-4 flex items-center justify-between relative z-50 transition-colors duration-300">
-        {/* PARTEA STÂNGĂ: Hamburger + Logo + Link-uri Desktop */}
         <div className="flex items-center gap-4 flex-1">
-          {/* BUTON HAMBURGER MOBIL */}
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="flex md:hidden flex-col gap-1.5 p-1 text-stone-600 dark:text-zinc-400 hover:text-stone-900 dark:hover:text-white transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-emerald-500 rounded-lg"
@@ -41,7 +37,6 @@ const Navbar = () => {
             ></span>
           </button>
 
-          {/* BRAND / LOGO */}
           <Link
             to="/"
             className={`text-xl font-black tracking-wider text-emerald-600 dark:text-emerald-500 font-sans px-2 py-0.5 ${focusRing}`}
@@ -49,7 +44,6 @@ const Navbar = () => {
             E-COMMERCE
           </Link>
 
-          {/* LINK-URI DESKTOP ADAPTIVE */}
           <div className="hidden md:flex gap-6 text-sm font-medium ml-6">
             {!isAdmin ? (
               <>
@@ -76,7 +70,6 @@ const Navbar = () => {
                   Vezi Magazinul
                 </Link>
 
-                {/* Pentru rutele admin, am asigurat padding și inline-block ca inelul de focus să nu taie marginea dedesubt */}
                 <Link
                   to="/admin/produse"
                   className={`inline-flex items-center text-emerald-700 dark:text-emerald-400 hover:text-emerald-800 dark:hover:text-emerald-300 font-bold border-b-2 border-emerald-600/60 dark:border-emerald-500/40 px-2 py-0.5 transition-all ${focusRing}`}
@@ -111,7 +104,6 @@ const Navbar = () => {
           </div>
         </div>
 
-        {/* PARTEA DREAPTĂ: Schimbător temă + Coș + Profil / Autentificare */}
         <div className="flex items-center gap-2 sm:gap-4">
           <ThemeToggle />
 
@@ -147,7 +139,6 @@ const Navbar = () => {
         </div>
       </nav>
 
-      {/* MENIUL MOBIL */}
       <MobileMenu isOpen={isMenuOpen} setIsOpen={setIsMenuOpen} />
     </>
   );

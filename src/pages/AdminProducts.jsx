@@ -21,6 +21,7 @@ function AdminProducts() {
     try {
       setLoading(true);
       const prodData = await productService.getAllProducts();
+      console.log("Răspuns API Produse:", prodData);
       const catData = await categoriesService.getCategories();
 
       setProducts(prodData.products || prodData || []);
