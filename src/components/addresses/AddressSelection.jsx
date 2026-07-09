@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import addressService from "../../services/addressService.js";
 import AddressForm from "./AddressForm.jsx";
+import { toast } from "sonner";
 
 const AddressSelection = ({ onAddressSelect, selectedAddressId }) => {
   const [addresses, setAddresses] = useState([]);
@@ -46,10 +47,11 @@ const AddressSelection = ({ onAddressSelect, selectedAddressId }) => {
       if (editingAddress) {
         const addressId = editingAddress.id || editingAddress._id;
         await addressService.updateAddress(addressId, formData);
-        alert("Adresă actualizată cu succes!");
+
+        toast.success("Adresă actualizată cu succes!");
       } else {
         await addressService.saveAddress(formData);
-        alert("Adresă adăugată cu succes!");
+        toast.success("Adresă adăugată cu succes!");
       }
 
       setIsFormOpen(false);
@@ -57,7 +59,7 @@ const AddressSelection = ({ onAddressSelect, selectedAddressId }) => {
       await fetchAddresses();
     } catch (error) {
       console.error("Eroare la trimiterea formularului de adresă:", error);
-      alert("A apărut o eroare. Te rugăm să încerci din nou.");
+      toast.error("A apărut o eroare. Te rugăm să încerci din nou.");
     }
   };
 
@@ -68,23 +70,55 @@ const AddressSelection = ({ onAddressSelect, selectedAddressId }) => {
     setIsFormOpen(true);
   };
 
-  const handleDeleteClick = async (e, addr) => {
+  const handleDeleteClick = (e, addr) => {
     e.preventDefault();
     e.stopPropagation();
     const addressId = addr.id || addr._id;
 
-    if (window.confirm("Ești sigur că vrei să ștergi această adresă?")) {
-      try {
-        await addressService.deleteAddress(addressId);
-        alert("Adresă ștearsă cu succes!");
-        await fetchAddresses();
-      } catch (error) {
-        console.error("Eroare la ștergerea adresei:", error);
-        alert("Nu s-a putut șterge adresa. Încearcă din nou.");
-      }
-    }
+    // Randerăm un toast interactiv custom folosind Sonner
+    toast.custom(
+      (t) => (
+        <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 p-4 rounded-xl shadow-lg flex flex-col gap-3">
+          <div>
+            <h4 className="text-sm font-bold text-stone-900 dark:text-white">
+              Ștergere Adresă
+            </h4>
+            <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
+              Ești sigur că vrei să ștergi această adresă?
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => toast.dismiss(t)}
+              className="px-2.5 py-1.5 text-xs font-bold text-stone-600 dark:text-zinc-400 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 rounded-lg cursor-pointer transition-colors"
+            >
+              Anulează
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t);
+                try {
+                  await addressService.deleteAddress(addressId);
+                  toast.success("Adresă ștearsă cu succes!");
+                  await fetchAddresses();
+                } catch (error) {
+                  console.error("Eroare la ștergerea adresei:", error);
+                  toast.error("Nu s-a putut șterge adresa. Încearcă din nou.");
+                }
+              }}
+              className="px-2.5 py-1.5 text-xs font-bold bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 text-white rounded-lg cursor-pointer shadow-sm transition-colors"
+            >
+              Șterge
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+      },
+    );
   };
-
   const handleAddNewClick = () => {
     setEditingAddress(null);
     setIsFormOpen(true);

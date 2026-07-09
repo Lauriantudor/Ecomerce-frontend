@@ -25,7 +25,7 @@ function Footer() {
               to="/"
               className={`text-xl font-black tracking-wider text-emerald-600 dark:text-emerald-500 font-sans px-2 py-0.5 ${focusRing}`}
             >
-              E-COMMERCE
+              Urbano
             </Link>
             <p className="text-[11px] text-stone-600 dark:text-zinc-300 leading-relaxed max-w-xs">
               Haine streetwear și accesorii minimaliste, create special pentru

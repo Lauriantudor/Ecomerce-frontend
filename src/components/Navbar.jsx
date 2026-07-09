@@ -41,7 +41,7 @@ const Navbar = () => {
             to="/"
             className={`text-xl font-black tracking-wider text-emerald-600 dark:text-emerald-500 font-sans px-2 py-0.5 ${focusRing}`}
           >
-            E-COMMERCE
+            Urbano
           </Link>
 
           <div className="hidden md:flex gap-6 text-sm font-medium ml-6">

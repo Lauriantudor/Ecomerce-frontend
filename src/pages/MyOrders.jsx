@@ -23,7 +23,6 @@ const MyOrders = () => {
     fetchUserOrders();
   }, []);
 
-  // ─── UX OPTIMIZARE: Scroll automat sus la schimbarea paginii ───
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [currentPage]);
@@ -35,7 +34,7 @@ const MyOrders = () => {
       setOrders(res.orders || []);
     } catch (error) {
       console.error("Eroare la încărcarea comenzilor:", error);
-      toast.error("Nu s-a putut încărca istoricul", {
+      toast.error("Nu s-a putut încătca istoricul", {
         description: "A apărut o eroare la preluarea comenzilor tale.",
       });
     } finally {
@@ -43,28 +42,62 @@ const MyOrders = () => {
     }
   };
 
-  const handleCancelOrder = async (orderId) => {
-    if (window.confirm("Ești sigur că vrei să anulezi această comandă?")) {
-      try {
-        setActionLoadingId(orderId);
-        const res = await orderService.cancelOrder(orderId);
+  const handleCancelOrder = (orderId) => {
+    toast.custom(
+      (t) => (
+        <div className="w-full max-w-sm bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 p-4 rounded-xl shadow-lg flex flex-col gap-3">
+          <div>
+            <h4 className="text-sm font-bold text-stone-900 dark:text-white">
+              Anulare Comandă
+            </h4>
+            <p className="text-xs text-stone-500 dark:text-zinc-400 mt-0.5">
+              Ești sigur că vrei să anulezi comanda #{orderId}? Această acțiune
+              nu poate fi întoarsă.
+            </p>
+          </div>
+          <div className="flex justify-end gap-2">
+            <button
+              onClick={() => toast.dismiss(t)}
+              className="px-2.5 py-1.5 text-xs font-bold text-stone-600 dark:text-zinc-400 bg-stone-100 hover:bg-stone-200 dark:bg-zinc-800 dark:hover:bg-zinc-700/80 rounded-lg cursor-pointer transition-colors"
+            >
+              Renunță
+            </button>
+            <button
+              onClick={async () => {
+                toast.dismiss(t);
+                try {
+                  setActionLoadingId(orderId);
+                  const res = await orderService.cancelOrder(orderId);
 
-        toast.success("Comandă anulată", {
-          description: res.message || "Comanda a fost anulată cu succes. 🛒",
-        });
+                  toast.success("Comandă anulată", {
+                    description:
+                      res.message || "Comanda a fost anulată cu succes. 🛒",
+                  });
 
-        await fetchUserOrders();
-      } catch (error) {
-        console.error("Eroare la anularea comenzii:", error);
-        toast.error("Eroare la anulare", {
-          description:
-            error.response?.data?.message ||
-            "Nu s-a putut anula comanda în acest moment.",
-        });
-      } finally {
-        setActionLoadingId(null);
-      }
-    }
+                  await fetchUserOrders();
+                } catch (error) {
+                  console.error("Eroare la anularea comenzii:", error);
+                  toast.error("Eroare la anulare", {
+                    description:
+                      error.response?.data?.message ||
+                      "Nu s-a putut anula comanda în acest moment.",
+                  });
+                } finally {
+                  setActionLoadingId(null);
+                }
+              }}
+              className="px-2.5 py-1.5 text-xs font-bold bg-rose-600 hover:bg-rose-700 dark:bg-rose-500 dark:hover:bg-rose-600 text-white rounded-lg cursor-pointer shadow-sm transition-colors"
+            >
+              Da, anulează
+            </button>
+          </div>
+        </div>
+      ),
+      {
+        duration: 5000,
+        position: "top-center",
+      },
+    );
   };
 
   const openDetailsModal = (e, order) => {
@@ -151,7 +184,6 @@ const MyOrders = () => {
                   key={order.id}
                   className="bg-white dark:bg-[#121212] border border-stone-200/60 dark:border-zinc-900 rounded-2xl p-5 md:p-6 space-y-4 transition-all hover:border-stone-300 dark:hover:border-zinc-800 shadow-sm"
                 >
-                  {/* Cap Comandă */}
                   <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-2 border-b border-stone-100 dark:border-zinc-900 pb-3">
                     <div className="space-y-0.5">
                       <h3 className="font-bold text-stone-800 dark:text-zinc-200">
@@ -185,7 +217,6 @@ const MyOrders = () => {
                     </div>
                   </div>
 
-                  {/* Produse comandate */}
                   <div className="space-y-2">
                     {order.items?.map((item) => (
                       <div
@@ -202,7 +233,6 @@ const MyOrders = () => {
                     ))}
                   </div>
 
-                  {/* Footer Comandă */}
                   <div className="flex flex-col sm:flex-row justify-between items-stretch sm:items-center gap-4 pt-3 border-t border-stone-100 dark:border-zinc-900/50">
                     <p className="text-sm text-stone-500 dark:text-zinc-400">
                       Total de plată:{" "}
@@ -216,7 +246,7 @@ const MyOrders = () => {
                         type="button"
                         tabIndex={isAnyModalOpen ? "-1" : "0"}
                         onClick={(e) => openDetailsModal(e, order)}
-                        className="text-xs font-bold text-stone-700 dark:text-zinc-300 hover:text-stone-900 dark:hover:text-white border border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 bg-stone-50 dark:bg-zinc-900/50 px-4 py-2 rounded-xl transition-all uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-zinc-400 cursor-pointer"
+                        className="text-xs font-bold text-stone-700 dark:text-zinc-300 hover:text-stone-900 dark:hover:white border border-stone-200 dark:border-zinc-800 hover:border-stone-300 dark:hover:border-zinc-700 bg-stone-50 dark:bg-zinc-900/50 px-4 py-2 rounded-xl transition-all uppercase tracking-wider focus:outline-none focus:ring-2 focus:ring-stone-400 dark:focus:ring-zinc-400 cursor-pointer"
                       >
                         Detalii Comandă
                       </button>
@@ -238,7 +268,6 @@ const MyOrders = () => {
               );
             })}
 
-            {/* COMPONENTA DE PAGINARE */}
             {totalPages > 1 && (
               <div className="pt-4">
                 <Pagination

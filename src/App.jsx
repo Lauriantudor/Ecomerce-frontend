@@ -17,7 +17,6 @@ import Footer from "./components/Footer";
 function App() {
   const { user, loading } = useAuth();
 
-  // Helper pentru a proteja rutele de Admin
   const AdminRoute = ({ children }) => {
     if (loading) {
       return (
@@ -35,28 +34,27 @@ function App() {
   };
 
   return (
-    /* 
-      AICI ESTE SCHIMBAREA: Am înlocuit <> cu acest div structural.
-      El forțează aplicația să aibă cel puțin înălțimea ecranului și aliniază componentele pe verticală.
-    */
     <div className="flex flex-col min-h-screen bg-[#faf8f0] dark:bg-zinc-950 text-stone-900 dark:text-white transition-colors duration-300">
+      <a
+        href="#main-content"
+        className="pointer-events-none absolute top-4 left-4 z-50 -translate-y-24 bg-emerald-600 hover:bg-emerald-700 text-white px-4 py-2.5 rounded-xl text-xs font-black uppercase tracking-wider shadow-md transition-transform focus:pointer-events-auto focus:translate-y-0 focus:outline-none focus:ring-2 focus:ring-emerald-500"
+      >
+        Sari la conținutul principal
+      </a>
       <header>
         <Navbar />
       </header>
 
-      {/* `flex-grow` îi spune main-ului să ocupe tot spațiul rămas liber, împingând footer-ul jos */}
-      <main className="w-full flex-grow">
+      <main id="main-content" tabIndex="-1" className="w-full flex-grow">
         <AuthModal />
 
         <Routes>
-          {/* RUTE PUBLICE / CLIENȚI */}
           <Route path="/" element={<Home />} />
           <Route path="/product/:id" element={<ProductDetails />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/comenzile-mele" element={<MyOrders />} />
           <Route path="/contact" element={<ContactForm />} />
 
-          {/* RUTE PROTEJATE ADMIN */}
           <Route
             path="/admin/produse"
             element={
@@ -82,12 +80,10 @@ function App() {
             }
           />
 
-          {/* Redirecționare corectă pentru pagini inexistente */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
       </main>
 
-      {/* Footer-ul va sta acum lipit de marginea de jos pe paginile goale, dar va coborî natural pe paginile lungi */}
       <Footer />
 
       <Toaster position="bottom-right" richColors closeButton />

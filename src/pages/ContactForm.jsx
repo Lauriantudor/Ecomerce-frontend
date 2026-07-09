@@ -95,7 +95,7 @@ function ContactForm() {
               value={formData.name}
               onChange={handleChange}
               disabled={!!user}
-              placeholder="Ex: Tudor Laurian"
+              placeholder="Ex: Prenume Nume"
               className={`w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200/60 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-stone-900 dark:text-white placeholder-stone-800 dark:placeholder-zinc-300 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all font-medium ${
                 user
                   ? "opacity-60 cursor-not-allowed bg-stone-100 dark:bg-zinc-950/40"
@@ -144,7 +144,7 @@ function ContactForm() {
               required
               value={formData.subject}
               onChange={handleChange}
-              placeholder="Ex: Întrebare legată de livrare"
+              placeholder="Ex: Întrebare legată de produs"
               className="w-full bg-stone-50 dark:bg-zinc-950 border border-stone-200/60 dark:border-zinc-800 rounded-xl px-4 py-3 text-sm text-stone-900 dark:text-white placeholder-stone-800 dark:placeholder-zinc-300 focus:outline-none focus:ring-1 focus:ring-emerald-500/30 focus:border-emerald-500/50 transition-all font-medium"
             />
           </div>

@@ -1,13 +1,28 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import QuantitySelector from "../QuantitySelector";
+import Pagination from "../Pagination";
 
 function ProductTable({
-  products,
+  products = [],
   onEditProduct,
   onDeleteProduct,
   onUpdateStock,
 }) {
   const [stockQuantities, setStockQuantities] = useState({});
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 5;
+
+  const totalPages = Math.ceil(products.length / ITEMS_PER_PAGE);
+
+  const indexOfLastItem = currentPage * ITEMS_PER_PAGE;
+  const indexOfFirstItem = indexOfLastItem - ITEMS_PER_PAGE;
+  const currentProducts = products.slice(indexOfFirstItem, indexOfLastItem);
+
+  useEffect(() => {
+    if (currentPage > totalPages && totalPages > 0) {
+      setCurrentPage(totalPages);
+    }
+  }, [products.length, totalPages, currentPage]);
 
   const handleInputChange = (productId, value) => {
     const safeValue = value !== undefined && value !== null ? value : "";
@@ -28,13 +43,17 @@ function ProductTable({
 
   return (
     <div className="space-y-4">
-      {/* ─── MOD VIZUALIZARE DESKTOP: TABEL ADAPTIV ─── */}
       <div className="hidden md:block bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl overflow-hidden shadow-sm dark:shadow-xl transition-colors duration-300">
-        <div className="p-4 border-b border-stone-200 dark:border-zinc-800 bg-stone-50/70 dark:bg-zinc-900/50">
+        <div className="p-4 border-b border-stone-200 dark:border-zinc-800 bg-stone-50/70 dark:bg-zinc-900/50 flex justify-between items-center">
           <h2 className="text-sm font-black uppercase tracking-wider text-stone-700 dark:text-zinc-300">
             Catalog Produse
           </h2>
+          <span className="text-xs font-medium text-stone-500 dark:text-zinc-400">
+            Afișat {products.length > 0 ? indexOfFirstItem + 1 : 0}-
+            {Math.min(indexOfLastItem, products.length)} din {products.length}
+          </span>
         </div>
+
         <table className="w-full text-left border-collapse">
           <thead>
             <tr className="border-b border-stone-200 dark:border-zinc-800 text-xs font-bold text-stone-500 dark:text-zinc-400 uppercase tracking-wider bg-stone-100/40 dark:bg-zinc-900/30">
@@ -47,7 +66,7 @@ function ProductTable({
             </tr>
           </thead>
           <tbody className="divide-y divide-stone-200 dark:divide-zinc-800/60 text-sm">
-            {products.map((product) => (
+            {currentProducts.map((product) => (
               <tr
                 key={product.id}
                 className="hover:bg-stone-50 dark:hover:bg-zinc-800/20 transition-colors"
@@ -105,8 +124,6 @@ function ProductTable({
                     </button>
                   </div>
                 </td>
-
-                {/* 🛠️ REPARAȚIE DESKTOP: Grupăm semantic acțiunile în celulă pentru a forța NVDA să le izoleze */}
                 <td className="p-4 text-right whitespace-nowrap">
                   <div
                     role="group"
@@ -131,18 +148,27 @@ function ProductTable({
                 </td>
               </tr>
             ))}
+            {currentProducts.length === 0 && (
+              <tr>
+                <td
+                  colSpan="6"
+                  className="p-8 text-center text-stone-500 dark:text-zinc-400"
+                >
+                  Nu există produse de afișat.
+                </td>
+              </tr>
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* ─── MOD VIZUALIZARE MOBIL: LISTĂ DE CARDURI COMPACTE ─── */}
       <div className="block md:hidden space-y-4">
         <h2 className="text-xs font-black uppercase tracking-wider text-stone-600 dark:text-zinc-400 px-1">
           Catalog Produse ({products.length})
         </h2>
 
         <ul className="space-y-4" role="list">
-          {products.map((product) => (
+          {currentProducts.map((product) => (
             <li
               key={product.id}
               className="bg-white dark:bg-zinc-900 border border-stone-200 dark:border-zinc-800 rounded-2xl p-4 space-y-4 shadow-sm dark:shadow-lg transition-colors duration-300"
@@ -187,7 +213,6 @@ function ProductTable({
                 </div>
               </div>
 
-              {/* Secțiune Alimentare Rapidă Stoc Mobil */}
               <div className="bg-stone-50/60 dark:bg-zinc-950/60 p-2.5 rounded-xl border border-stone-200 dark:border-zinc-800/60 flex items-center justify-between gap-2">
                 <span className="text-xs text-stone-600 dark:text-zinc-400 font-medium">
                   Adaugă stoc:
@@ -208,7 +233,6 @@ function ProductTable({
                 </div>
               </div>
 
-              {/* Butoane Acțiuni Mobil */}
               <div className="pt-1 border-t border-stone-200 dark:border-zinc-800/50">
                 <div
                   role="group"
@@ -234,8 +258,19 @@ function ProductTable({
               </div>
             </li>
           ))}
+          {currentProducts.length === 0 && (
+            <li className="p-4 text-center text-stone-500 dark:text-zinc-400">
+              Nu există produse de afișat.
+            </li>
+          )}
         </ul>
       </div>
+
+      <Pagination
+        currentPage={currentPage}
+        totalPages={totalPages}
+        onPageChange={(page) => setCurrentPage(page)}
+      />
     </div>
   );
 }

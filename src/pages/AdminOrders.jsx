@@ -59,7 +59,7 @@ function AdminOrders() {
         prev.map((o) => (o.id === order.id ? { ...o, status: newStatus } : o)),
       );
       toast.success(
-        `Statusul comenzii #${order.id.slice(-6)} a fost actualizat.`,
+        `Statusul comenzii #${String(order.id).slice(-6)} a fost actualizat.`,
       );
     } catch (err) {
       console.error("Eroare la schimbarea statusului:", err);
@@ -116,7 +116,7 @@ function AdminOrders() {
   }
 
   return (
-    <main className="min-h-screen bg-stone-50 dark:bg-zinc-950 text-stone-800 dark:text-zinc-100 py-8 px-4 sm:px-6 lg:px-8 transition-colors duration-300">
+    <>
       <div className="max-w-7xl mx-auto">
         {/* Header-ul Pagină */}
         <div className="mb-8 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
@@ -191,7 +191,7 @@ function AdminOrders() {
           onClose={handleCloseOrderModal}
         />
       )}
-    </main>
+    </>
   );
 }
 
